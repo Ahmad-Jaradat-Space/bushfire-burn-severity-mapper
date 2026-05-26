@@ -1,0 +1,83 @@
+# Root configuration. Per-experiment YAMLs in configs/experiments/ override these.
+project:
+  name: australian-bushfire-burn-severity-mapper
+  seed: 42
+  output_dir: outputs
+
+device:
+  prefer: mps          # mps | cuda | cpu — picker falls back automatically
+
+data:
+  imagery_provider: planetary_computer
+  imagery_collection: sentinel-2-l2a
+  imagery_bands: [B02, B03, B04, B08, B11, B12]   # blue, green, red, NIR, SWIR1, SWIR2
+  imagery_scl_band: SCL
+  label_source: aus_geebam
+  resolution_m: 10
+  tile_size: 256
+  tile_stride: 256
+
+# Working CRS policy (committed in M1, see docs/architecture.md):
+#   - Per-AOI UTM for reflectance/tiles/predictions (equal-area work)
+#   - EPSG:3577 (GDA94 Australian Albers) only for GEEBAM download + national display maps
+crs:
+  working: per_aoi_utm
+  national_display: EPSG:3577
+  geebam_request: EPSG:3577
+
+# Temporal-window policy — every experiment must declare which mode it runs in.
+#   - event_specific: per-AOI Pre/Post derived from the named fire
+#   - geebam_aligned: matches the GEEBAM compositing windows for direct label comparison
+temporal_windows:
+  geebam_aligned:
+    pre: ["2018-04-15", "2019-04-15"]
+    post_a: ["2019-11-15", "2020-02-15"]
+    post_b: ["2020-01-15", "2020-05-15"]
+
+events:
+  train:
+    - currowan_2019_2020
+    - gospers_mountain_2019_2020
+  val:
+    - kangaroo_island_2019_2020
+  test:
+    - east_gippsland_2019_2020
+
+# Vertical-slice override (M5-M9): Kangaroo Island in train/val/test via random tile split.
+# IMPORTANT: metrics produced under this split are smoke-test only. First valid
+# generalisation metric is the event-wise split above, evaluated at M10.
+vertical_slice:
+  event: kangaroo_island_2019_2020
+  split: random_tile        # 70/15/15
+  metrics_label: "SMOKE-TEST (random tile split; not generalization)"
+
+preprocess:
+  cloud_mask:
+    scl_mask_classes: [0, 1, 3, 8, 9, 10, 11]   # no-data, defective, cloud-shadow, cloud-med, cloud-high, cirrus, snow
+    dilate_pixels: 2
+  composite:
+    method: median
+  resampling:
+    reflectance: bilinear
+    categorical: nearest
+
+features:
+  spectral: [B02, B03, B04, B08, B11, B12]
+  indices: [NBR, NDVI, NDMI, NBR2, BSI]
+  deltas: true
+  topo: [slope]
+  include_elevation: false
+
+class_map:
+  ignore_id: 255
+  geebam_to_internal:
+    "1": 255    # unburnt-outside / no-data — IGNORE
+    "2": 0      # unburnt
+    "3": 1      # low-moderate
+    "4": 2      # high
+    "5": 3      # very-high
+  internal_names: [unburnt, low_mod, high, very_high]
+
+reproducibility:
+  log_provenance: true
+  save_config_snapshot: true

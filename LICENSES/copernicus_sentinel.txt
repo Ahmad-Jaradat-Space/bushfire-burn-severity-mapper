@@ -1,0 +1,17 @@
+Copernicus Sentinel-2 Data — Terms of Use
+
+The Copernicus Sentinel-2 mission is part of the European Union's Earth observation
+programme, Copernicus. Sentinel-2 data are made available under the European Union's
+Free, Full and Open Data Policy under Regulation (EU) No 377/2014.
+
+Licence: Creative Commons Attribution-ShareAlike 3.0 IGO (CC-BY-SA 3.0 IGO)
+
+Attribution: Contains modified Copernicus Sentinel data [year of acquisition]
+processed by ESA.
+
+This repository uses Sentinel-2 Level-2A surface reflectance imagery accessed via
+the Microsoft Planetary Computer STAC API (https://planetarycomputer.microsoft.com).
+
+Microsoft Planetary Computer terms: https://planetarycomputer.microsoft.com/terms
+
+ESA Sentinel terms: https://sentinels.copernicus.eu/documents/247904/690755/Sentinel_Data_Legal_Notice

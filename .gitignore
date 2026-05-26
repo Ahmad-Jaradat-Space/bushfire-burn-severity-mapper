@@ -1,0 +1,46 @@
+# Data
+data/raw/
+data/interim/
+data/processed/
+outputs/
+*.tif
+*.tiff
+*.zarr/
+*.npz
+*.parquet
+!data/sample/**
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+build/
+dist/
+.coverage
+
+# Env
+.venv/
+.env
+.envrc
+
+# Notebooks
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Models + logs
+*.ckpt
+*.pt
+*.pth
+*.joblib
+runs/
+tb_logs/
+lightning_logs/
+wandb/

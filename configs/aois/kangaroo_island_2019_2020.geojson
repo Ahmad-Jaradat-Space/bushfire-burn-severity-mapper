@@ -1,0 +1,29 @@
+{
+  "type": "FeatureCollection",
+  "name": "kangaroo_island_2019_2020",
+  "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "event_id": "kangaroo_island_2019_2020",
+        "state": "SA",
+        "fire_complex": "Kangaroo Island fires (Ravine, Menzies, Duncan)",
+        "pre_window": ["2019-07-01", "2019-10-31"],
+        "post_window": ["2019-12-20", "2020-02-29"],
+        "notes": "v0 bbox covering the island; refine from NIAFED footprint in M3.",
+        "source": "Wikipedia + NIAFED indicative footprint (to be refined)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [136.55, -36.10],
+          [137.95, -36.10],
+          [137.95, -35.50],
+          [136.55, -35.50],
+          [136.55, -36.10]
+        ]]
+      }
+    }
+  ]
+}

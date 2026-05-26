@@ -1,0 +1,29 @@
+{
+  "type": "FeatureCollection",
+  "name": "currowan_2019_2020",
+  "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "event_id": "currowan_2019_2020",
+        "state": "NSW",
+        "fire_complex": "Currowan (South Coast / Shoalhaven / Eurobodalla)",
+        "pre_window": ["2019-07-01", "2019-10-31"],
+        "post_window": ["2019-12-15", "2020-02-29"],
+        "notes": "v0 bbox spanning Clyde Mountain through Mogo / Batemans Bay corridor; refine from NIAFED in M3.",
+        "source": "NSW RFS public maps + NIAFED footprint (to be refined)"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [149.70, -35.95],
+          [150.50, -35.95],
+          [150.50, -35.20],
+          [149.70, -35.20],
+          [149.70, -35.95]
+        ]]
+      }
+    }
+  ]
+}
