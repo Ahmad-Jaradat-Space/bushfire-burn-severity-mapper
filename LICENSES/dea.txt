@@ -1,0 +1,19 @@
+Digital Earth Australia (DEA) and Geoscience Australia — Terms of Use
+
+Source: Geoscience Australia, Digital Earth Australia knowledge hub.
+https://knowledge.dea.ga.gov.au/
+
+Products used in this repository:
+- DEA Land Cover (Landsat) — annual continental land cover at 30 m
+- GA SRTM 1 second DEM (v1.0) — elevation at ~30 m
+- ABARES CLUM 2023 (optional) — land use at 50 m
+
+Licence: Creative Commons Attribution 4.0 International (CC-BY 4.0)
+https://creativecommons.org/licenses/by/4.0/
+
+Attribution strings:
+- "DEA Land Cover (Landsat) © Commonwealth of Australia (Geoscience Australia)
+   2024, licensed CC-BY 4.0."
+- "GA SRTM 1 second DEM v1.0 © Commonwealth of Australia (Geoscience Australia)
+   2015, licensed CC-BY 4.0."
+- "ABARES CLUM 2023 © Commonwealth of Australia (ABARES) 2023, licensed CC-BY 4.0."

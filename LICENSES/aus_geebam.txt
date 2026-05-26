@@ -1,0 +1,23 @@
+AUS GEEBAM Fire Severity — Terms of Use
+
+Source: Australian Government Department of Climate Change, Energy, the Environment
+and Water (DCCEEW).
+
+Service: https://gis.environment.gov.au/gispubmap/rest/services/threats/AUS_GEEBAM_Fire_Severity/MapServer
+
+Licence: Creative Commons Attribution 4.0 International (CC-BY 4.0)
+https://creativecommons.org/licenses/by/4.0/
+
+Attribution: Australian Google Earth Engine Burnt Area Map (AUS GEEBAM) ©
+Commonwealth of Australia 2020, licensed CC-BY 4.0.
+
+IMPORTANT CAVEAT (propagated from upstream documentation):
+- AUS GEEBAM classes are not based on field data.
+- Low and moderate severity are combined into a single class upstream.
+- Published comparisons against state products are NOT traditional validation —
+  there is no true point-of-truth dataset.
+- This repository treats GEEBAM as a PUBLIC PROXY LABEL SOURCE, not ground truth.
+
+Companion dataset:
+NIAFED — National Indicative Aggregated Fire Extent Dataset (CC-BY 4.0)
+https://fed.dcceew.gov.au/datasets/national-indicative-aggregated-fire-extent-dataset

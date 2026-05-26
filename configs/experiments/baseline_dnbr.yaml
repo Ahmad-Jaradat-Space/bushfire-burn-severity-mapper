@@ -1,0 +1,24 @@
+# First runnable experiment: dNBR threshold + USGS multiclass baseline on Kangaroo Island.
+# Inherits configs/config.yaml then overrides. Resolved by src.utils.config.load_config().
+extends: ../config.yaml
+
+experiment:
+  name: baseline_dnbr
+  model: dnbr_threshold
+  event: kangaroo_island_2019_2020
+  split_mode: vertical_slice    # SMOKE-TEST until M10
+  temporal_mode: event_specific # alternative: geebam_aligned
+
+baseline:
+  binary_thresholds: [0.10, 0.20, 0.30]
+  multiclass_breakpoints:    # USGS-style dNBR bins (heuristic, not Aus-calibrated)
+    unburnt:        [-Infinity, 0.10]
+    low:            [0.10, 0.27]
+    moderate_low:   [0.27, 0.44]
+    moderate_high:  [0.44, 0.66]
+    high:           [0.66, Infinity]
+
+outputs:
+  prediction_dir: outputs/predictions/baseline_dnbr
+  metrics_dir: outputs/metrics/baseline_dnbr
+  figures_dir: outputs/figures/baseline_dnbr
