@@ -163,21 +163,29 @@ def fig04_five_methods():
 
 
 def fig05_eventwise_iou():
-    models = ["ΔNBR threshold", "RandomForest", "XGBoost", "U-Net", "SegFormer-B0"]
-    iou_random    = np.array([0.46, 0.71, 0.73, 0.79, 0.80])
-    iou_eventwise = np.array([0.43, 0.55, 0.57, 0.62, 0.63])
-    fig, ax = plt.subplots(figsize=(11.5, 5.5))
-    x = np.arange(len(models)); w = 0.36
-    b1 = ax.bar(x - w/2, iou_random,    width=w, label="Random tile split (smoke test)",
+    # REAL numbers. Random split = Kangaroo vertical-slice. Event-wise =
+    # train on Currowan+Gospers, validate on Kangaroo.
+    models = ["ΔNBR threshold", "RandomForest", "XGBoost", "U-Net"]
+    iou_random    = np.array([0.165, 0.220, 0.214, 0.237])
+    iou_eventwise = np.array([0.165, 0.061, 0.063, 0.186])
+    fig, ax = plt.subplots(figsize=(11.5, 5.8))
+    xs = np.arange(len(models)); w = 0.36
+    b1 = ax.bar(xs - w/2, iou_random,    width=w, label="Random tile split (smoke test, Kangaroo only)",
                 color=ACCENT_BLUE, alpha=0.65)
-    b2 = ax.bar(x + w/2, iou_eventwise, width=w, label="Event-wise hold-out (real signal)",
+    b2 = ax.bar(xs + w/2, iou_eventwise, width=w, label="Event-wise hold-out (Currowan+Gospers → Kangaroo)",
                 color=ACCENT, alpha=0.95)
     for b, v in zip(b1, iou_random):
         ax.text(b.get_x()+b.get_width()/2, v+0.012, f"{v:.2f}", ha="center", fontsize=9, color=INK_LIGHT)
     for b, v in zip(b2, iou_eventwise):
         ax.text(b.get_x()+b.get_width()/2, v+0.012, f"{v:.2f}", ha="center", fontsize=9, color=INK)
-    ax.set_xticks(x); ax.set_xticklabels(models, fontsize=10)
-    ax.set_ylim(0, 0.95); ax.set_ylabel("Macro IoU vs GEEBAM proxy (4 classes)")
+    for x, vr, ve in zip(xs, iou_random, iou_eventwise):
+        drop = (vr - ve) / max(vr, 1e-9)
+        if drop > 0.3:
+            ax.annotate(f"–{int(drop*100)}%", xy=(x, ve), xytext=(x, ve+0.06),
+                        ha="center", fontsize=9, color="#7F1F1F",
+                        arrowprops=dict(arrowstyle="->", color="#7F1F1F", linewidth=0.8))
+    ax.set_xticks(xs); ax.set_xticklabels(models, fontsize=10)
+    ax.set_ylim(0, 0.32); ax.set_ylabel("Macro IoU vs GEEBAM proxy (4 classes)")
     ax.set_title("What spatial leakage looks like when you remove it",
                  loc="left", fontsize=13, pad=14)
     ax.legend(loc="upper left", fontsize=10)
