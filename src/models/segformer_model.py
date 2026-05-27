@@ -82,9 +82,11 @@ class SegformerWrapper(nn.Module):
         self.num_classes = num_classes
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        out = self.model(pixel_values=x)
+        out = self.model(pixel_values=x.contiguous())
         logits_lo = out.logits     # [B, C, H/4, W/4]
         logits = torch.nn.functional.interpolate(
             logits_lo, size=x.shape[-2:], mode="bilinear", align_corners=False,
         )
-        return logits
+        # MPS autograd will fail with "view size not compatible" if any
+        # downstream loss op (CE/Dice) calls .view() on a non-contiguous tensor.
+        return logits.contiguous()
