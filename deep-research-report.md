@@ -2,11 +2,11 @@
 
 ## Executive summary
 
-This plan specifies a research-grade GitHub repository for an **Australian Bushfire Burn Severity Mapper** that Claude Code can implement end-to-end. The recommended first release is a **non-operational, retrospective burn-severity mapping pipeline** that uses **Sentinel-2 Level-2A surface reflectance imagery** as input and **AUS GEEBAM** as the primary severity label source, with **NIAFED** as the fire-extent mask and **DEA Land Cover** plus **GA SRTM DEM** as optional ancillary layers. That combination is the best balance of public availability, Australian relevance, reproducibility, and implementation simplicity for a first version. citeturn34view2turn4view1turn14view0turn14view1turn22search0turn2search0
+This plan specifies a research-grade GitHub repository for an **Australian Bushfire Burn Severity Mapper** that an automated implementer can implement end-to-end. The recommended first release is a **non-operational, retrospective burn-severity mapping pipeline** that uses **Sentinel-2 Level-2A surface reflectance imagery** as input and **AUS GEEBAM** as the primary severity label source, with **NIAFED** as the fire-extent mask and **DEA Land Cover** plus **GA SRTM DEM** as optional ancillary layers. That combination is the best balance of public availability, Australian relevance, reproducibility, and implementation simplicity for a first version. citeturn34view2turn4view1turn14view0turn14view1turn22search0turn2search0
 
 The first version should **not** be framed as an operational emergency tool. That warning is not optional. AUS GEEBAM explicitly notes that its classes are not based on field data and that its published comparisons against state products are not traditional validation because there is no true point-of-truth dataset in the comparison; DEA Hotspots also explicitly warns that it is not for safety-of-life decisions and is not real time. The repository must therefore present outputs as **research and retrospective analytics only**, not as incident response, dispatch, evacuation, or public warning support. citeturn34view2turn4view1turn41view0
 
-The implementation sequence should be staged. Start with a **strong, explainable baseline**: pre/post Sentinel-2 compositing, NBR and dNBR generation, and a thresholded baseline. Then add **classical ML** on engineered features using RandomForest and XGBoost. Only after the data and evaluation pipeline are stable should the repo add **deep semantic segmentation** with a compact U-Net, followed by SegFormer-B0 as the higher-capacity model. This stage order is practical because it reduces the risk that Claude Code spends effort on GPU training before the label alignment, masking, tiling, and event-wise evaluation are correct. citeturn27view0turn39search8turn39search5turn39search3turn39search1
+The implementation sequence should be staged. Start with a **strong, explainable baseline**: pre/post Sentinel-2 compositing, NBR and dNBR generation, and a thresholded baseline. Then add **classical ML** on engineered features using RandomForest and XGBoost. Only after the data and evaluation pipeline are stable should the repo add **deep semantic segmentation** with a compact U-Net, followed by SegFormer-B0 as the higher-capacity model. This stage order is practical because it reduces the risk that an automated implementer spends effort on GPU training before the label alignment, masking, tiling, and event-wise evaluation are correct. citeturn27view0turn39search8turn39search5turn39search3turn39search1
 
 The core data-access recommendation is to use **Microsoft Planetary Computer** as the primary imagery source for the repo because it has a public STAC API and a public Sentinel-2 L2A collection, while keeping **Copernicus Data Space Ecosystem** as the official fallback path. The old Copernicus Open Access Hub / SciHub path should not be used as the implementation default because Copernicus migrated users to CDSE and decommissioned the old public hubs in 2023. citeturn22search0turn2search0turn21search6turn4view6turn38search0turn38search10
 
@@ -742,7 +742,7 @@ Use all of the following:
 - TensorBoard logs for deep runs
 - CSV and JSON metric exports for every experiment
 
-The sample dataset is essential because it lets Claude Code develop and test the repo without downloading a full event archive first.
+The sample dataset is essential because it lets an automated implementer develop and test the repo without downloading a full event archive first.
 
 ### Example commands
 
@@ -907,4 +907,4 @@ A few details were genuinely **unspecified** in the public pages parsed here and
 | User compute budget | Unspecified |
 | National field-validated public burn-severity ground truth for Australia | Unspecified / not identified in the official sources reviewed here |
 
-Claude Code should therefore implement robust wrappers around the public landing pages and service endpoints, log every source URL used at runtime, and fail loudly when a public endpoint changes rather than silently substituting a different source.
+an automated implementer should therefore implement robust wrappers around the public landing pages and service endpoints, log every source URL used at runtime, and fail loudly when a public endpoint changes rather than silently substituting a different source.
