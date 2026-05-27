@@ -28,7 +28,9 @@ from src.evaluation.metrics import confusion_matrix
 from src.features.indices import nbr
 from src.models.baselines import dnbr as dnbr_index, dnbr_multiclass_usgs
 from src.utils.geo import aoi_bbox_wgs84
-from src.viz.synthetic_scene import build as build_scene, synthetic_model_predictions
+from src.viz.maps import render_aoi_locator
+from src.viz.synthetic_scene import (build as build_scene, synthetic_model_predictions,
+                                       s2_truecolour, s2_swir_falsecolour)
 from src.viz.theme import (ACCENT, ACCENT_BLUE, INK, INK_LIGHT, PAPER, SEV_UNBURNT,
                            SEVERITY_COLOURS, SEVERITY_NAMES, add_caption, apply_theme,
                            dnbr_cmap, severity_cmap, severity_legend, thin_axes)
@@ -45,62 +47,29 @@ AOIS = [
 ]
 
 
-def stretch(arr, pct=(2, 98)):
-    out = np.zeros_like(arr)
-    for c in range(arr.shape[0]):
-        lo, hi = np.nanpercentile(arr[c], pct)
-        if hi > lo:
-            out[c] = np.clip((arr[c] - lo) / (hi - lo), 0, 1)
-    return out
-
-
 def fig01_aoi_locator():
-    fig, ax = plt.subplots(figsize=(10.5, 7.5))
-    ax.set_xlim(112, 154); ax.set_ylim(-44, -10)
-    ax.set_aspect(1.0 / np.cos(np.deg2rad(-28)))
-    ax.add_patch(FancyBboxPatch((113, -43), 41, 33,
-                                boxstyle="round,pad=0.4,rounding_size=1.5",
-                                linewidth=0.6, edgecolor="#7E7864", facecolor="#EFEAD9"))
-    for event_id, label, state, split, colour in AOIS:
-        minx, miny, maxx, maxy = aoi_bbox_wgs84(event_id)
-        ax.add_patch(Rectangle((minx, miny), maxx-minx, maxy-miny,
-                               edgecolor=colour, facecolor=colour, alpha=0.18, linewidth=1.4))
-        cx, cy = (minx+maxx)/2, (miny+maxy)/2
-        ax.scatter([cx], [cy], s=70, c=colour, edgecolor="white", linewidth=1.5, zorder=3)
-        dy = 1.6 if state == "SA" else -2.0 if state == "VIC" else 1.8
-        ax.annotate(f"{label}\n{state} · {split}", xy=(cx, cy), xytext=(cx+1.2, cy+dy),
-                    fontsize=10, color=INK,
-                    arrowprops=dict(arrowstyle="-", color=colour, linewidth=0.8))
-    ax.set_xlabel("Longitude (°E)"); ax.set_ylabel("Latitude (°S — shown negative)")
-    ax.set_title("Four areas of interest, spanning three states and three ecological zones",
-                 loc="left", fontsize=13, pad=14)
-    thin_axes(ax)
-    fig.tight_layout()
-    fig.savefig(OUT / "01_aoi_locator.png", dpi=180, bbox_inches="tight", facecolor=PAPER)
-    plt.close(fig)
+    render_aoi_locator(AOIS, OUT / "01_aoi_locator.png", figsize=(11, 8))
 
 
 def fig02_prepost_truecolour():
     scene = build_scene(h=512, w=900, seed=7)
-    pre_tc  = stretch(scene.pre [[2, 1, 0]])
-    post_tc = stretch(scene.post[[2, 1, 0]])
-    pre_fc  = stretch(scene.pre [[5, 3, 2]])
-    post_fc = stretch(scene.post[[5, 3, 2]])
-    fig, axes = plt.subplots(2, 2, figsize=(11.5, 7.5))
+    pre_tc, post_tc = s2_truecolour(scene.pre), s2_truecolour(scene.post)
+    pre_fc, post_fc = s2_swir_falsecolour(scene.pre), s2_swir_falsecolour(scene.post)
+    fig, axes = plt.subplots(2, 2, figsize=(12.5, 9.0))
     for ax in axes.ravel():
         ax.set_xticks([]); ax.set_yticks([])
         for s in ax.spines.values(): s.set_visible(False)
-    axes[0,0].imshow(np.transpose(pre_tc,  (1,2,0)))
-    axes[0,0].set_title("Pre-fire — true colour", loc="left", fontsize=11.5)
-    axes[0,1].imshow(np.transpose(post_tc, (1,2,0)))
-    axes[0,1].set_title("Post-fire — true colour", loc="left", fontsize=11.5)
-    axes[1,0].imshow(np.transpose(pre_fc,  (1,2,0)))
-    axes[1,0].set_title("Pre-fire — SWIR/NIR false colour", loc="left", fontsize=11.5)
-    axes[1,1].imshow(np.transpose(post_fc, (1,2,0)))
-    axes[1,1].set_title("Post-fire — SWIR/NIR false colour", loc="left", fontsize=11.5)
+    titles = [("Pre-fire — true colour",                    pre_tc),
+              ("Post-fire — true colour",                   post_tc),
+              ("Pre-fire — SWIR / NIR false colour",        pre_fc),
+              ("Post-fire — SWIR / NIR false colour",       post_fc)]
+    for ax, (title, img) in zip(axes.ravel(), titles):
+        ax.imshow(img)
+        ax.set_title(title, loc="left", fontsize=12, color=INK, pad=8)
     fig.suptitle("Kangaroo Island, October 2019 → January 2020 (synthetic stand-in)",
-                 fontsize=14, x=0.02, ha="left", y=0.98)
-    fig.tight_layout(rect=(0, 0.02, 1, 0.94))
+                 fontsize=15, x=0.02, ha="left", y=0.99, color=INK)
+    fig.subplots_adjust(left=0.02, right=0.98, top=0.91, bottom=0.03,
+                        hspace=0.18, wspace=0.04)
     fig.savefig(OUT / "02_prepost_truecolour.png", dpi=180, bbox_inches="tight", facecolor=PAPER)
     plt.close(fig)
 
@@ -112,24 +81,29 @@ def fig03_dnbr_panel():
     d = dnbr_index(scene.pre, scene.post)
     thresh = dnbr_multiclass_usgs(d)
     thresh[~scene.land_mask] = 255
-    fig, axes = plt.subplots(2, 2, figsize=(11.5, 8.0))
+    fig, axes = plt.subplots(2, 2, figsize=(12.5, 9.0))
     for ax in axes.ravel():
         ax.set_xticks([]); ax.set_yticks([])
         for s in ax.spines.values(): s.set_visible(False)
     im0 = axes[0,0].imshow(nbr_pre, cmap="RdYlGn", vmin=-0.5, vmax=0.9)
-    axes[0,0].set_title("NBR before the fire", loc="left", fontsize=11.5)
+    axes[0,0].set_title("NBR before the fire", loc="left", fontsize=12, pad=8)
     im1 = axes[0,1].imshow(nbr_post, cmap="RdYlGn", vmin=-0.5, vmax=0.9)
-    axes[0,1].set_title("NBR after the fire", loc="left", fontsize=11.5)
+    axes[0,1].set_title("NBR after the fire", loc="left", fontsize=12, pad=8)
     im2 = axes[1,0].imshow(d, cmap=dnbr_cmap(), vmin=-0.2, vmax=1.0)
-    axes[1,0].set_title("ΔNBR — change in NBR", loc="left", fontsize=11.5)
+    axes[1,0].set_title("ΔNBR — change in NBR", loc="left", fontsize=12, pad=8)
     axes[1,1].imshow(np.ma.masked_equal(thresh, 255),
                     cmap=severity_cmap(), vmin=0, vmax=3, interpolation="nearest")
-    axes[1,1].set_title("ΔNBR → 4 severity classes (Key & Benson 2006)", loc="left", fontsize=11.5)
+    axes[1,1].set_title("ΔNBR → 4 severity classes (Key & Benson 2006)", loc="left", fontsize=12, pad=8)
     for ax, im in [(axes[0,0], im0), (axes[0,1], im1), (axes[1,0], im2)]:
-        cb = fig.colorbar(im, ax=ax, fraction=0.04, pad=0.02, shrink=0.85)
+        cb = fig.colorbar(im, ax=ax, fraction=0.038, pad=0.015, shrink=0.78)
         cb.outline.set_linewidth(0.5); cb.ax.tick_params(labelsize=8, color=INK_LIGHT)
-    severity_legend(axes[1,1])
-    fig.tight_layout()
+    # Severity legend below the classified panel, outside the image area
+    handles = [plt.Rectangle((0, 0), 1, 1, color=c) for c in SEVERITY_COLOURS]
+    axes[1,1].legend(handles, SEVERITY_NAMES, loc="upper right",
+                     bbox_to_anchor=(1.0, -0.04), ncols=4, fontsize=9,
+                     frameon=False, columnspacing=1.2, handletextpad=0.4)
+    fig.subplots_adjust(left=0.02, right=0.98, top=0.94, bottom=0.07,
+                        hspace=0.22, wspace=0.08)
     fig.savefig(OUT / "03_dnbr_panel.png", dpi=180, bbox_inches="tight", facecolor=PAPER)
     plt.close(fig)
 
@@ -137,10 +111,11 @@ def fig03_dnbr_panel():
 def fig04_five_methods():
     scene = build_scene(h=512, w=900, seed=7)
     preds = synthetic_model_predictions(scene.severity, seed=0)
-    fig, axes = plt.subplots(2, 3, figsize=(13.5, 7.5))
+    fig, axes = plt.subplots(2, 3, figsize=(15.0, 8.5))
     for ax in axes.ravel():
         ax.set_xticks([]); ax.set_yticks([])
         for s in ax.spines.values(): s.set_visible(False)
+        ax.set_facecolor(PAPER)
     panels = [
         ("AUS GEEBAM (proxy label)", scene.severity),
         ("ΔNBR threshold baseline",  preds["baseline_dnbr"]),
@@ -152,11 +127,16 @@ def fig04_five_methods():
     for ax, (title, arr) in zip(axes.ravel(), panels):
         ax.imshow(np.ma.masked_equal(arr, 255), cmap=severity_cmap(),
                   vmin=0, vmax=3, interpolation="nearest")
-        ax.set_title(title, loc="left", fontsize=11.5)
-    severity_legend(axes[0,0])
+        ax.set_title(title, loc="left", fontsize=12, pad=8)
+    # Severity legend below all panels, centred
+    handles = [plt.Rectangle((0, 0), 1, 1, color=c) for c in SEVERITY_COLOURS]
+    fig.legend(handles, SEVERITY_NAMES, loc="lower center",
+               bbox_to_anchor=(0.5, 0.0), ncols=4, fontsize=10,
+               frameon=False, columnspacing=2.2, handletextpad=0.5)
     fig.suptitle("Five methods, one fire — agreement with the GEEBAM proxy",
-                 fontsize=14, x=0.02, ha="left", y=0.99)
-    fig.tight_layout(rect=(0, 0.0, 1, 0.95))
+                 fontsize=15, x=0.02, ha="left", y=0.98, color=INK)
+    fig.subplots_adjust(left=0.01, right=0.99, top=0.91, bottom=0.07,
+                        hspace=0.20, wspace=0.04)
     fig.savefig(OUT / "04_five_methods.png", dpi=180, bbox_inches="tight", facecolor=PAPER)
     plt.close(fig)
 
