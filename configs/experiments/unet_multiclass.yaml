@@ -1,0 +1,51 @@
+extends: ../config.yaml
+
+experiment:
+  name: unet_multiclass
+  model: unet
+  event: kangaroo_island_2019_2020         # vertical slice; M10 fans out
+  split_mode: vertical_slice
+  temporal_mode: event_specific
+
+unet:
+  encoder_name: resnet34
+  in_channels: 18
+  num_classes: 4
+  decoder_channels: [256, 128, 64, 32, 16]
+  encoder_weights: null            # train from scratch on 18 channels (no imagenet match)
+  dropout: 0.1
+
+train:
+  batch_size: 8
+  grad_accum_steps: 2              # effective batch 16 on M4 Pro
+  epochs: 50
+  lr: 0.001
+  weight_decay: 0.0001
+  scheduler: cosine
+  warmup_steps: 100
+  loss:
+    ce_weight: 0.5
+    dice_weight: 0.5
+  ignore_index: 255
+  early_stop_patience: 10
+  log_every: 25
+  num_workers: 2
+  pin_memory: false
+
+augment:
+  hflip: 0.5
+  vflip: 0.5
+  rotate90: 0.5
+  brightness_jitter: 0.05
+  noise_sigma: 0.005
+
+fast_mode:
+  epochs: 5
+  max_tiles_train: 200
+  max_tiles_val: 50
+
+outputs:
+  prediction_dir: outputs/predictions/unet_multiclass
+  metrics_dir: outputs/metrics/unet_multiclass
+  model_dir: outputs/models/unet
+  log_dir: outputs/logs/unet
