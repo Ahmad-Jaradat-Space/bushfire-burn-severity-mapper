@@ -1,0 +1,48 @@
+extends: ../config.yaml
+
+experiment:
+  name: segformer_multiclass
+  model: segformer
+  event: kangaroo_island_2019_2020
+  split_mode: vertical_slice
+  temporal_mode: event_specific
+
+segformer:
+  backbone: nvidia/mit-b0
+  in_channels: 18                  # first-conv weight inflation in segformer_model.py
+  num_classes: 4
+
+train:
+  batch_size: 4
+  grad_accum_steps: 4              # effective batch 16
+  epochs: 60
+  lr: 6.0e-5
+  weight_decay: 0.01
+  scheduler: linear_warmup
+  warmup_steps: 1000
+  loss:
+    ce_weight: 0.7
+    dice_weight: 0.3
+  ignore_index: 255
+  early_stop_patience: 12
+  log_every: 25
+  num_workers: 2
+  pin_memory: false
+
+augment:
+  hflip: 0.5
+  vflip: 0.5
+  rotate90: 0.5
+  brightness_jitter: 0.05
+  noise_sigma: 0.005
+
+fast_mode:
+  epochs: 5
+  max_tiles_train: 200
+  max_tiles_val: 50
+
+outputs:
+  prediction_dir: outputs/predictions/segformer_multiclass
+  metrics_dir: outputs/metrics/segformer_multiclass
+  model_dir: outputs/models/segformer
+  log_dir: outputs/logs/segformer
