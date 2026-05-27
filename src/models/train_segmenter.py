@@ -102,8 +102,9 @@ def _write_uint8(path: Path, arr: np.ndarray, transform, crs) -> None:
         dst.write(arr[np.newaxis, ...])
 
 
-def train(config_path: str, fast_mode: bool = False) -> dict:
-    cfg = load_config(config_path)
+def train(config_path: str, fast_mode: bool = False,
+          overrides: list[str] | None = None) -> dict:
+    cfg = load_config(config_path, overrides=overrides)
     set_seeds(cfg.project.seed)
 
     train_events, val_events, test_events = _split_events(cfg)
@@ -173,7 +174,7 @@ def train(config_path: str, fast_mode: bool = False) -> dict:
                 logits, label,
                 ce_weight=cfg.train.loss.ce_weight,
                 dice_weight=cfg.train.loss.dice_weight,
-                ignore_index=cfg.train.loss.ignore_index,
+                ignore_index=cfg.train.ignore_index,
             )
             loss.backward()
             if (step + 1) % cfg.train.grad_accum_steps == 0:
@@ -189,8 +190,16 @@ def train(config_path: str, fast_mode: bool = False) -> dict:
                     baseline_step = float(np.median(step_times))
                     log.info("Baseline step time: %.2fs", baseline_step)
             elif baseline_step is not None and dt > 3 * baseline_step:
-                log.warning("Step %d took %.2fs (>3x baseline). Likely MPS CPU fallback. "
-                            "Consider reducing tile_size or batch.", step, dt)
+                # MPS step-time guard: abort to surface silent CPU fallback loudly
+                # rather than letting a 10x-slower run consume hours unnoticed.
+                # Set `train.disable_step_guard=true` in the config to opt out.
+                if not getattr(cfg.train, "disable_step_guard", False):
+                    raise RuntimeError(
+                        f"Step {step} took {dt:.2f}s (>3x baseline {baseline_step:.2f}s). "
+                        "This is the signature of a silent MPS CPU fallback. "
+                        "Reduce tile_size or batch, or set train.disable_step_guard=true."
+                    )
+                log.warning("Step %d took %.2fs (>3x baseline) but guard disabled.", step, dt)
             if step % cfg.train.log_every == 0:
                 log.info("  epoch=%d step=%d/%d loss=%.4f (ce=%.4f dice=%.4f) dt=%.2fs",
                          epoch, step, len(train_dl), components["total"],
@@ -292,12 +301,13 @@ def main() -> None:
     p.add_argument("--config", required=True)
     p.add_argument("--fast-mode", action="store_true",
                    help="Use cfg.fast_mode (5 epochs, tile subset, early stop).")
+    p.add_argument("overrides", nargs="*", help='OmegaConf dot-overrides e.g. "train.lr=5e-4"')
     args = p.parse_args()
     if "PYTORCH_ENABLE_MPS_FALLBACK" not in os.environ:
         os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
         log.warning("Set PYTORCH_ENABLE_MPS_FALLBACK=1 in-process — "
                     "for production runs, source scripts/setup_env.sh BEFORE python starts.")
-    train(args.config, fast_mode=args.fast_mode)
+    train(args.config, fast_mode=args.fast_mode, overrides=args.overrides)
 
 
 if __name__ == "__main__":

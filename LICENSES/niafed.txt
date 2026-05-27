@@ -1,0 +1,18 @@
+NIAFED — National Indicative Aggregated Fire Extent Dataset
+
+Source: Australian Government Department of Climate Change, Energy, the
+Environment and Water (DCCEEW). Aggregated from state agency fire footprints
+for the 2019–2020 season.
+
+Landing page:
+https://fed.dcceew.gov.au/datasets/national-indicative-aggregated-fire-extent-dataset
+
+Licence: Creative Commons Attribution 4.0 International (CC-BY 4.0)
+https://creativecommons.org/licenses/by/4.0/
+
+Attribution: National Indicative Aggregated Fire Extent Dataset v20200225 ©
+Commonwealth of Australia 2020, licensed CC-BY 4.0.
+
+This repository uses NIAFED to refine AOI polygons from their initial
+Wikipedia-derived bounding boxes to the actual 2019-2020 fire extent
+(planned in milestone M3 refinement work).
