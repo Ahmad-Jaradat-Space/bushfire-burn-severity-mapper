@@ -37,8 +37,9 @@ def _write_uint8(path: Path, arr: np.ndarray, transform, crs) -> None:
         dst.write(arr[np.newaxis, ...])
 
 
-def train_rf(config_path: str = "configs/experiments/rf_multiclass.yaml") -> dict:
-    cfg = load_config(config_path)
+def train_rf(config_path: str = "configs/experiments/rf_multiclass.yaml",
+             overrides: list[str] | None = None) -> dict:
+    cfg = load_config(config_path, overrides=overrides)
     if cfg.experiment.split_mode == "vertical_slice":
         train_events = [cfg.experiment.event]
         val_events = [cfg.experiment.event]
@@ -119,8 +120,9 @@ def train_rf(config_path: str = "configs/experiments/rf_multiclass.yaml") -> dic
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--config", default="configs/experiments/rf_multiclass.yaml")
+    p.add_argument("overrides", nargs="*", help='OmegaConf dot-overrides')
     args = p.parse_args()
-    train_rf(args.config)
+    train_rf(args.config, overrides=args.overrides)
 
 
 if __name__ == "__main__":

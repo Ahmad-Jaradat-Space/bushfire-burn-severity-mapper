@@ -1,0 +1,58 @@
+# CI smoke config — runs a 2-epoch U-Net on synthetic fixture tiles.
+extends: ../config.yaml
+
+experiment:
+  name: smoke_unet
+  model: unet
+  event: synthetic_event
+  split_mode: vertical_slice
+  temporal_mode: event_specific
+
+events:
+  train: [synthetic_event]
+  val:   [synthetic_event]
+  test:  [synthetic_event]
+
+unet:
+  encoder_name: resnet18                  # smallest SMP encoder for fastest CI
+  in_channels: 18
+  num_classes: 4
+  decoder_channels: [128, 64, 32, 16, 8]
+  encoder_weights: null
+  dropout: 0.0
+
+train:
+  batch_size: 2
+  grad_accum_steps: 1
+  epochs: 2
+  lr: 0.001
+  weight_decay: 0.0
+  scheduler: cosine
+  warmup_steps: 0
+  loss:
+    ce_weight: 0.5
+    dice_weight: 0.5
+  ignore_index: 255
+  early_stop_patience: 99
+  log_every: 1
+  num_workers: 0
+  pin_memory: false
+  disable_step_guard: true              # CI is CPU; bf16 baseline timing won't apply
+
+augment:
+  hflip: 0.0
+  vflip: 0.0
+  rotate90: 0.0
+  brightness_jitter: 0.0
+  noise_sigma: 0.0
+
+fast_mode:
+  epochs: 2
+  max_tiles_train: 4
+  max_tiles_val: 2
+
+outputs:
+  prediction_dir: outputs/predictions/smoke_unet
+  metrics_dir: outputs/metrics/smoke_unet
+  model_dir: outputs/models/smoke_unet
+  log_dir: outputs/logs/smoke_unet
