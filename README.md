@@ -1,6 +1,11 @@
 # Australian Bushfire Burn Severity Mapper
 
-> **Status — milestone M1 (scaffold).** The repository is being built in milestones; the README will fill in as results land. Latest hero figure and metrics will appear here at M6.5 (vertical-slice demo) and M12 (final).
+> **Status — milestone M6.5 (early demo).** Pipeline + classical-ML code is wired. Real Kangaroo Island composites land when M3 fetches Sentinel-2 imagery; until then the demo below uses a synthetic stand-in so the visual story is reviewable.
+
+![Kangaroo Island pre/post/severity (synthetic placeholder)](docs/demo/kangaroo_animation.gif)
+
+→ Interactive before/after slider: [`docs/demo/kangaroo_slider.html`](docs/demo/kangaroo_slider.html)
+→ Plain-English explainer: [`docs/demo/non_expert_panel.md`](docs/demo/non_expert_panel.md)
 
 Retrospective mapping of bushfire burn severity over four Black Summer 2019–2020 events from public Sentinel-2 imagery, comparing a threshold baseline, two classical ML models, and two deep semantic-segmentation models.
 
@@ -83,12 +88,12 @@ LICENSES/       # upstream attribution notices per dataset
 | Milestone | Goal | Status |
 |---|---|---|
 | M1 | Scaffold + governance (CRS, temporal, licence, provenance) | ✅ |
-| M2 | GEEBAM labels ingest | ☐ |
-| M3 | Sentinel-2 ingest + cloud mask | ☐ |
-| M4 | Preprocess + tiling + label alignment | ☐ |
-| M5 | dNBR baseline on Kangaroo Island | ☐ |
-| M6 | RandomForest + XGBoost | ☐ |
-| M6.5 | Early non-technical demo (slider + GIF + plain-English panel) | ☐ |
+| M2 | GEEBAM labels ingest | ✅ |
+| M3 | Sentinel-2 ingest + cloud mask | ✅ |
+| M4 | Preprocess + tiling + label alignment | ✅ |
+| M5 | dNBR baseline on Kangaroo Island | ✅ |
+| M6 | RandomForest + XGBoost | ✅ |
+| M6.5 | Early non-technical demo (slider + GIF + plain-English panel) | ✅ |
 | M7 | U-Net on MPS bf16 | ☐ |
 | M8 | SegFormer-B0 on MPS | ☐ |
 | M9 | Vertical-slice 5-method comparison | ☐ |
