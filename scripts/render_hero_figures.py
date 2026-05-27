@@ -29,8 +29,8 @@ from src.features.indices import nbr
 from src.models.baselines import dnbr as dnbr_index, dnbr_multiclass_usgs
 from src.utils.geo import aoi_bbox_wgs84
 from src.viz.maps import render_aoi_locator
-from src.viz.synthetic_scene import (build as build_scene, synthetic_model_predictions,
-                                       s2_truecolour, s2_swir_falsecolour)
+from src.viz.scene_loader import load_kangaroo, model_predictions
+from src.viz.synthetic_scene import (s2_truecolour, s2_swir_falsecolour)
 from src.viz.theme import (ACCENT, ACCENT_BLUE, INK, INK_LIGHT, PAPER, SEV_UNBURNT,
                            SEVERITY_COLOURS, SEVERITY_NAMES, add_caption, apply_theme,
                            dnbr_cmap, severity_cmap, severity_legend, thin_axes)
@@ -47,12 +47,17 @@ AOIS = [
 ]
 
 
+def _get_scene():
+    """Load real Kangaroo data if present, synthetic fallback otherwise."""
+    return load_kangaroo()
+
+
 def fig01_aoi_locator():
     render_aoi_locator(AOIS, OUT / "01_aoi_locator.png", figsize=(11, 8))
 
 
 def fig02_prepost_truecolour():
-    scene = build_scene(h=512, w=900, seed=7)
+    scene = _get_scene()
     pre_tc, post_tc = s2_truecolour(scene.pre), s2_truecolour(scene.post)
     pre_fc, post_fc = s2_swir_falsecolour(scene.pre), s2_swir_falsecolour(scene.post)
     fig, axes = plt.subplots(2, 2, figsize=(12.5, 9.0))
@@ -66,7 +71,9 @@ def fig02_prepost_truecolour():
     for ax, (title, img) in zip(axes.ravel(), titles):
         ax.imshow(img)
         ax.set_title(title, loc="left", fontsize=12, color=INK, pad=8)
-    fig.suptitle("Kangaroo Island, October 2019 → January 2020 (synthetic stand-in)",
+    src = ("Real Sentinel-2 L2A via Microsoft Planetary Computer"
+           if scene.is_real else "Synthetic stand-in")
+    fig.suptitle(f"Kangaroo Island, October 2019 → January 2020 — {src}",
                  fontsize=15, x=0.02, ha="left", y=0.99, color=INK)
     fig.subplots_adjust(left=0.02, right=0.98, top=0.91, bottom=0.03,
                         hspace=0.18, wspace=0.04)
@@ -75,7 +82,7 @@ def fig02_prepost_truecolour():
 
 
 def fig03_dnbr_panel():
-    scene = build_scene(h=512, w=900, seed=7)
+    scene = _get_scene()
     nbr_pre  = nbr(scene.pre [3], scene.pre [5])
     nbr_post = nbr(scene.post[3], scene.post[5])
     d = dnbr_index(scene.pre, scene.post)
@@ -109,24 +116,38 @@ def fig03_dnbr_panel():
 
 
 def fig04_five_methods():
-    scene = build_scene(h=512, w=900, seed=7)
-    preds = synthetic_model_predictions(scene.severity, seed=0)
+    scene = _get_scene()
+    preds, preds_real = model_predictions(scene)
     fig, axes = plt.subplots(2, 3, figsize=(15.0, 8.5))
     for ax in axes.ravel():
         ax.set_xticks([]); ax.set_yticks([])
         for s in ax.spines.values(): s.set_visible(False)
         ax.set_facecolor(PAPER)
+    def _t(k, base):
+        if k not in preds: return f"{base} · not trained"
+        if not preds_real.get(k, False): return f"{base} · synthetic stand-in"
+        return base
     panels = [
-        ("AUS GEEBAM (proxy label)", scene.severity),
-        ("ΔNBR threshold baseline",  preds["baseline_dnbr"]),
-        ("RandomForest",             preds["rf"]),
-        ("XGBoost",                  preds["xgb"]),
-        ("U-Net (ResNet-34)",        preds["unet"]),
-        ("SegFormer-B0",             preds["segformer"]),
+        ("AUS GEEBAM (proxy label)",         scene.severity, True),
+        (_t('baseline_dnbr', "ΔNBR threshold baseline"),
+            preds.get('baseline_dnbr'), 'baseline_dnbr' in preds),
+        (_t('rf',            "RandomForest"),
+            preds.get('rf'), 'rf' in preds),
+        (_t('xgb',           "XGBoost"),
+            preds.get('xgb'), 'xgb' in preds),
+        (_t('unet',          "U-Net (ResNet-34)"),
+            preds.get('unet'), 'unet' in preds),
+        (_t('segformer',     "SegFormer-B0"),
+            preds.get('segformer'), 'segformer' in preds),
     ]
-    for ax, (title, arr) in zip(axes.ravel(), panels):
-        ax.imshow(np.ma.masked_equal(arr, 255), cmap=severity_cmap(),
-                  vmin=0, vmax=3, interpolation="nearest")
+    for ax, (title, arr, present) in zip(axes.ravel(), panels):
+        if arr is not None and present:
+            ax.imshow(np.ma.masked_equal(arr, 255), cmap=severity_cmap(),
+                      vmin=0, vmax=3, interpolation="nearest")
+        else:
+            ax.text(0.5, 0.5, "not trained\n(see README)", ha="center", va="center",
+                    fontsize=10, color=INK_LIGHT, transform=ax.transAxes)
+            ax.set_facecolor("#FAFAF6")
         ax.set_title(title, loc="left", fontsize=12, pad=8)
     # Severity legend below all panels, centred
     handles = [plt.Rectangle((0, 0), 1, 1, color=c) for c in SEVERITY_COLOURS]
