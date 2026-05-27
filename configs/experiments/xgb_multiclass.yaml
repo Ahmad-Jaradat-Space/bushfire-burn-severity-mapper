@@ -1,0 +1,26 @@
+extends: ../config.yaml
+
+experiment:
+  name: xgb_multiclass
+  model: xgboost
+  event: kangaroo_island_2019_2020
+  split_mode: vertical_slice
+  temporal_mode: event_specific
+
+xgb:
+  n_estimators: 800
+  max_depth: 8
+  learning_rate: 0.05
+  subsample: 0.8
+  colsample_bytree: 0.8
+  reg_lambda: 1.0
+  tree_method: hist
+  random_state: 42
+
+sampling:
+  pixels_per_class: 50000
+
+outputs:
+  prediction_dir: outputs/predictions/xgb_multiclass
+  metrics_dir: outputs/metrics/xgb_multiclass
+  model_dir: outputs/models/xgb

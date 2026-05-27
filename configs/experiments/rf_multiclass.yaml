@@ -1,0 +1,24 @@
+extends: ../config.yaml
+
+experiment:
+  name: rf_multiclass
+  model: random_forest
+  event: kangaroo_island_2019_2020       # vertical slice; M10 fans out to 4 AOIs
+  split_mode: vertical_slice
+  temporal_mode: event_specific
+
+rf:
+  n_estimators: 500
+  max_depth: 30
+  min_samples_leaf: 5
+  class_weight: balanced_subsample
+  n_jobs: -1
+  random_state: 42
+
+sampling:
+  pixels_per_class: 50000       # cap to avoid NSW-dominance later (M10+)
+
+outputs:
+  prediction_dir: outputs/predictions/rf_multiclass
+  metrics_dir: outputs/metrics/rf_multiclass
+  model_dir: outputs/models/rf
