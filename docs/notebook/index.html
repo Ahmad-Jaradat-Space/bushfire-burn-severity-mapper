@@ -7804,7 +7804,7 @@ a.anchor-link {
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <div style="background:#F7F5EF; padding:2.5em 2em 1.5em 2em; border-left:6px solid #7F1F1F; font-family: 'Iowan Old Style', Charter, Georgia, serif;">
 <div style="font-size:0.85em; letter-spacing:0.25em; color:#7E7864; text-transform:uppercase;">Field notes · Remote sensing · Australian fire</div>
-<h1 style="font-size:2.4em; line-height:1.15; margin:0.2em 0 0.4em 0; color:#222;">Can a portfolio-scale ML model beat a 20-year-old spectral index — without pretending the labels are truth?</h1>
+<h1 style="font-size:2.4em; line-height:1.15; margin:0.2em 0 0.4em 0; color:#222;">Can a small deep model beat a twenty-year-old spectral index — without pretending the labels are truth?</h1>
 <div style="font-size:1.1em; color:#4A4A4A; max-width:46em;">A retrospective burn-severity benchmark over four 2019–2020 Black Summer fire events in Australia, comparing five methods on Sentinel-2 imagery, with a careful look at where each one fails.</div>
 <div style="font-size:0.9em; color:#7E7864; margin-top:1.4em;">Ahmad Jaradat · Hobart, Tasmania · 2026</div>
 </div>
@@ -8185,7 +8185,7 @@ Scene: REAL — Sentinel-2 + AUS GEEBAM
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="So-what-does-machine-learning-add?">So what does machine learning add?<a class="anchor-link" href="#So-what-does-machine-learning-add?">¶</a></h2><p>A reasonable hiring manager looking at the ΔNBR map above might ask: <em>if a simple two-band ratio gets you something this good, why train a U-Net at all?</em></p>
+<h2 id="So-what-does-machine-learning-add?">So what does machine learning add?<a class="anchor-link" href="#So-what-does-machine-learning-add?">¶</a></h2><p>A reasonable reader looking at the ΔNBR map above might ask: <em>if a simple two-band ratio gets you something this good, why train a U-Net at all?</em></p>
 <p>Three reasons are honest:</p>
 <ol>
 <li><strong>Thresholds drift across biomes.</strong> What separates “low” from “moderate” severity in Californian chaparral is wrong for stringybark, and wrong again for alpine ash. A model that uses additional spectral indices plus topography can learn biome-specific decision boundaries without hand-tuning per region.</li>
@@ -8434,15 +8434,15 @@ Scene: REAL — Sentinel-2 + AUS GEEBAM
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>/var/folders/w2/qlyh45rs3ng4tf2nlrkdvqdw0000gn/T/ipykernel_24456/2104682094.py:14: UserWarning: 'where' used without 'out', expect unitialized memory in output. If this is intentional, use out=None.
+<pre>/var/folders/w2/qlyh45rs3ng4tf2nlrkdvqdw0000gn/T/ipykernel_60019/2104682094.py:14: UserWarning: 'where' used without 'out', expect unitialized memory in output. If this is intentional, use out=None.
   norm = np.divide(cm, np.maximum(row_sums, 1), where=row_sums &gt; 0)
-/var/folders/w2/qlyh45rs3ng4tf2nlrkdvqdw0000gn/T/ipykernel_24456/2104682094.py:14: UserWarning: 'where' used without 'out', expect unitialized memory in output. If this is intentional, use out=None.
+/var/folders/w2/qlyh45rs3ng4tf2nlrkdvqdw0000gn/T/ipykernel_60019/2104682094.py:14: UserWarning: 'where' used without 'out', expect unitialized memory in output. If this is intentional, use out=None.
   norm = np.divide(cm, np.maximum(row_sums, 1), where=row_sums &gt; 0)
-/var/folders/w2/qlyh45rs3ng4tf2nlrkdvqdw0000gn/T/ipykernel_24456/2104682094.py:14: UserWarning: 'where' used without 'out', expect unitialized memory in output. If this is intentional, use out=None.
+/var/folders/w2/qlyh45rs3ng4tf2nlrkdvqdw0000gn/T/ipykernel_60019/2104682094.py:14: UserWarning: 'where' used without 'out', expect unitialized memory in output. If this is intentional, use out=None.
   norm = np.divide(cm, np.maximum(row_sums, 1), where=row_sums &gt; 0)
-/var/folders/w2/qlyh45rs3ng4tf2nlrkdvqdw0000gn/T/ipykernel_24456/2104682094.py:14: UserWarning: 'where' used without 'out', expect unitialized memory in output. If this is intentional, use out=None.
+/var/folders/w2/qlyh45rs3ng4tf2nlrkdvqdw0000gn/T/ipykernel_60019/2104682094.py:14: UserWarning: 'where' used without 'out', expect unitialized memory in output. If this is intentional, use out=None.
   norm = np.divide(cm, np.maximum(row_sums, 1), where=row_sums &gt; 0)
-/var/folders/w2/qlyh45rs3ng4tf2nlrkdvqdw0000gn/T/ipykernel_24456/2104682094.py:14: UserWarning: 'where' used without 'out', expect unitialized memory in output. If this is intentional, use out=None.
+/var/folders/w2/qlyh45rs3ng4tf2nlrkdvqdw0000gn/T/ipykernel_60019/2104682094.py:14: UserWarning: 'where' used without 'out', expect unitialized memory in output. If this is intentional, use out=None.
   norm = np.divide(cm, np.maximum(row_sums, 1), where=row_sums &gt; 0)
 </pre>
 </div>
@@ -8556,11 +8556,11 @@ Scene: REAL — Sentinel-2 + AUS GEEBAM
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="What-I-would-tell-a-hiring-manager-about-this-benchmark">What I would tell a hiring manager about this benchmark<a class="anchor-link" href="#What-I-would-tell-a-hiring-manager-about-this-benchmark">¶</a></h2><p>Three honest takeaways:</p>
+<h2 id="Three-honest-takeaways-from-the-benchmark">Three honest takeaways from the benchmark<a class="anchor-link" href="#Three-honest-takeaways-from-the-benchmark">¶</a></h2><p>Three honest takeaways:</p>
 <p><strong>1. The simplest baseline travels best.</strong> ΔNBR with USGS thresholds is competitive on event-wise IoU because it has nothing to overfit. Any ML system that ships should be compared against this floor, not against its own random-split scores.</p>
 <p><strong>2. The deep models earn their place on the spatial coherence of their predictions, not their headline metric.</strong> A pixel-by-pixel macro-IoU one point higher than RandomForest is a weak claim. A prediction that looks like a coherent fire map — with smooth boundaries and no salt-and-pepper noise — is a strong one, and that is where U-Net and SegFormer win cleanly.</p>
 <p><strong>3. The label problem dominates the model problem.</strong> AUS GEEBAM is the best public severity product Australia has, and it is a satellite-derived proxy. Until there is a continental field-validated dataset, every benchmark on this task — including this one — is measuring how well a model has learned a particular algorithmic interpretation of physics, not how well it has learned the physics. The right response is engineering humility: report event-wise metrics, report calibration, report stratified failure modes, and never describe the output as “ground truth.”</p>
-<p>If you are reading this as a hiring manager, what you are actually looking for is not the win. It is the discipline of the comparison.</p>
+<p>The point of the comparison is not the win. It is the discipline of the comparison — the event-wise hold-out, the calibration check, the named failure modes — and that discipline is portable to any other satellite-derived classification problem.</p>
 <hr/>
 <div style="font-size:0.9em; color:#7E7864; margin-top:1.6em; max-width:46em; line-height:1.5;">
 <strong>Project repository:</strong> all code, configs, and Codex review transcripts are in this repository under <code>src/</code>, <code>configs/</code>, and <code>docs/reviews/</code>. The README ships a runnable quickstart for the full pipeline (data fetch → composite → tile → train → evaluate → render) on a single AOI in &lt; 2 hours wall-clock on Apple Silicon.<br/><br/>
