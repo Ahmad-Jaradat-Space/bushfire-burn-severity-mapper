@@ -13,7 +13,7 @@ The single best entry point is the executable scientific notebook:
 → **[`notebooks/burn_severity_story.ipynb`](notebooks/burn_severity_story.ipynb)** — the project as a 30-minute read.
 → **[`docs/notebook/index.html`](docs/notebook/index.html)** — rendered HTML version for browser viewing.
 
-It reads like a magazine feature: starts with the physical signal in Sentinel-2 imagery, walks through the dNBR baseline, sets up the five-method tournament, and ends on the question every hiring manager actually cares about — *which model travels across fires and which one doesn't*.
+It reads like a magazine feature: starts with the physical signal in Sentinel-2 imagery, walks through the dNBR baseline, sets up the five-method tournament, and ends on the question that actually matters operationally — *which model travels across fires and which one doesn't*.
 
 ![AOI locator](docs/figures/01_aoi_locator.png)
 
@@ -178,4 +178,4 @@ Required attribution strings:
 
 ## About
 
-Built by [Ahmad Jaradat](https://github.com/Ahmad-Jaradat-Space) (Hobart, Tasmania). The project is published as a working portfolio piece — the full scientific design lives in [`deep-research-report.md`](deep-research-report.md), and the implementation followed a milestone-by-milestone plan with OpenAI Codex CLI reviewing each gate. Review transcripts at [`docs/reviews/`](docs/reviews/).
+Built by [Ahmad Jaradat](https://github.com/Ahmad-Jaradat-Space) (Hobart, Tasmania). The project is published as a working scientific notebook — the full scientific design lives in [`deep-research-report.md`](deep-research-report.md), and the implementation followed a milestone-by-milestone plan with OpenAI Codex CLI reviewing each gate. Review transcripts at [`docs/reviews/`](docs/reviews/).
