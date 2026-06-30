@@ -11,6 +11,7 @@ Two-stage flow:
 Splitting the two lets a reviewer (or Codex) inspect *what* will be downloaded
 before bandwidth is spent.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -34,8 +35,9 @@ DEFAULT_CLOUD_LT = 30
 log = get_logger(__name__)
 
 
-def query_window(event_id: str, window: tuple[str, str],
-                 cloud_lt: int = DEFAULT_CLOUD_LT) -> list[dict]:
+def query_window(
+    event_id: str, window: tuple[str, str], cloud_lt: int = DEFAULT_CLOUD_LT
+) -> list[dict]:
     """Query Planetary Computer STAC for items intersecting the AOI inside `window`.
 
     Returns the list of (unsigned) STAC item dictionaries.
@@ -54,8 +56,9 @@ def query_window(event_id: str, window: tuple[str, str],
     return items
 
 
-def fetch_event(event_id: str, out_dir: Path | None = None,
-                cloud_lt: int = DEFAULT_CLOUD_LT) -> Path:
+def fetch_event(
+    event_id: str, out_dir: Path | None = None, cloud_lt: int = DEFAULT_CLOUD_LT
+) -> Path:
     """Persist the pre/post STAC manifests for an event."""
     feat = load_aoi(event_id)
     props = feat["properties"]
@@ -104,10 +107,13 @@ def fetch_event(event_id: str, out_dir: Path | None = None,
     return items_path
 
 
-def download_assets(event_id: str, kind: Literal["pre", "post"],
-                    bands: tuple[str, ...] = DEFAULT_BANDS,
-                    resolution: int = 10,
-                    out_dir: Path | None = None) -> Path:
+def download_assets(
+    event_id: str,
+    kind: Literal["pre", "post"],
+    bands: tuple[str, ...] = DEFAULT_BANDS,
+    resolution: int = 10,
+    out_dir: Path | None = None,
+) -> Path:
     """Sign + load + persist a multi-band stack of Sentinel-2 L2A scenes.
 
     Output: data/raw/sentinel2/<event>/<kind>/stack.nc (NetCDF, lossless).
@@ -125,8 +131,14 @@ def download_assets(event_id: str, kind: Literal["pre", "post"],
 
     signed = [planetary_computer.sign(item) for item in items]
     epsg = utm_epsg_for_aoi(event_id)
-    log.info("Loading %d %s items, bands=%s, crs=EPSG:%d, res=%dm",
-             len(signed), kind, bands, epsg, resolution)
+    log.info(
+        "Loading %d %s items, bands=%s, crs=EPSG:%d, res=%dm",
+        len(signed),
+        kind,
+        bands,
+        epsg,
+        resolution,
+    )
 
     ds = odc_load(
         signed,
@@ -140,9 +152,14 @@ def download_assets(event_id: str, kind: Literal["pre", "post"],
     (out_dir / kind).mkdir(parents=True, exist_ok=True)
     stack_path = out_dir / kind / "stack.nc"
     ds.to_netcdf(stack_path)
-    log.info("Wrote %s (%d time × %d bands × %d × %d)",
-             stack_path, ds.sizes.get("time", 0), len(bands),
-             ds.sizes.get("y", 0), ds.sizes.get("x", 0))
+    log.info(
+        "Wrote %s (%d time × %d bands × %d × %d)",
+        stack_path,
+        ds.sizes.get("time", 0),
+        len(bands),
+        ds.sizes.get("y", 0),
+        ds.sizes.get("x", 0),
+    )
 
     write_manifest(
         stack_path,
@@ -166,8 +183,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Sentinel-2 L2A ingest.")
     parser.add_argument("--event", required=True)
     parser.add_argument("--stage", choices=["query", "download", "all"], default="query")
-    parser.add_argument("--kind", choices=["pre", "post"], default=None,
-                        help="Only relevant for --stage download")
+    parser.add_argument(
+        "--kind", choices=["pre", "post"], default=None, help="Only relevant for --stage download"
+    )
     parser.add_argument("--cloud-lt", type=int, default=DEFAULT_CLOUD_LT)
     args = parser.parse_args()
 

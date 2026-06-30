@@ -4,6 +4,7 @@ Every raster written by this repo ships with a sidecar `<output>.provenance.json
 containing source URLs, STAC item IDs, pipeline git SHA, CRS, resampling, class remap,
 and a UTC timestamp. This lets a hiring manager (or future-you) reproduce any artefact.
 """
+
 from __future__ import annotations
 
 import datetime as dt
@@ -18,7 +19,9 @@ def _git_sha() -> str:
     try:
         out = subprocess.run(
             ["git", "rev-parse", "--short", "HEAD"],
-            capture_output=True, text=True, check=True,
+            capture_output=True,
+            text=True,
+            check=True,
         )
         return out.stdout.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
@@ -57,7 +60,7 @@ def write_manifest(
         "event_id": event_id,
         "pipeline_step": pipeline_step,
         "git_sha": _git_sha(),
-        "generated_utc": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+        "generated_utc": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
         "crs": crs,
         "resampling": resampling,
         "class_remap": class_remap,

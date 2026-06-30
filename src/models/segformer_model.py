@@ -5,6 +5,7 @@ We load the mit-b0 backbone with ImageNet pretraining (3-channel input), then
 the RGB weights. This preserves the pretrained spatial structure while
 accepting our 18-channel pre/post/delta/topo stack.
 """
+
 from __future__ import annotations
 
 import torch
@@ -16,8 +17,8 @@ def _inflate_first_conv(conv: nn.Conv2d, new_in_channels: int) -> nn.Conv2d:
     """Return a new Conv2d with `new_in_channels` inputs whose weights repeat the
     averaged RGB kernel scaled by 3 / new_in_channels (so output magnitude is preserved).
     """
-    old_w = conv.weight.data            # [out, 3, kH, kW]
-    mean_w = old_w.mean(dim=1, keepdim=True)   # [out, 1, kH, kW]
+    old_w = conv.weight.data  # [out, 3, kH, kW]
+    mean_w = old_w.mean(dim=1, keepdim=True)  # [out, 1, kH, kW]
     new_w = mean_w.repeat(1, new_in_channels, 1, 1) * (3.0 / new_in_channels)
     new_conv = nn.Conv2d(
         in_channels=new_in_channels,
@@ -36,13 +37,17 @@ def _inflate_first_conv(conv: nn.Conv2d, new_in_channels: int) -> nn.Conv2d:
     return new_conv
 
 
-def build_segformer(in_channels: int = 18, num_classes: int = 4,
-                    backbone: str = "nvidia/mit-b0") -> nn.Module:
+def build_segformer(
+    in_channels: int = 18, num_classes: int = 4, backbone: str = "nvidia/mit-b0"
+) -> nn.Module:
     """Return a SegformerForSemanticSegmentation adapted for 18ch input."""
-    cfg = SegformerConfig.from_pretrained(backbone, num_labels=num_classes,
-                                          ignore_mismatched_sizes=True)
+    cfg = SegformerConfig.from_pretrained(
+        backbone, num_labels=num_classes, ignore_mismatched_sizes=True
+    )
     model = SegformerForSemanticSegmentation.from_pretrained(
-        backbone, config=cfg, ignore_mismatched_sizes=True,
+        backbone,
+        config=cfg,
+        ignore_mismatched_sizes=True,
     )
 
     # HF SegFormer in this version stores patch embeddings under
@@ -75,17 +80,21 @@ class SegformerWrapper(nn.Module):
     spatial size so the training loop is identical to U-Net.
     """
 
-    def __init__(self, in_channels: int = 18, num_classes: int = 4,
-                 backbone: str = "nvidia/mit-b0"):
+    def __init__(
+        self, in_channels: int = 18, num_classes: int = 4, backbone: str = "nvidia/mit-b0"
+    ):
         super().__init__()
         self.model = build_segformer(in_channels, num_classes, backbone)
         self.num_classes = num_classes
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         out = self.model(pixel_values=x.contiguous())
-        logits_lo = out.logits     # [B, C, H/4, W/4]
+        logits_lo = out.logits  # [B, C, H/4, W/4]
         logits = torch.nn.functional.interpolate(
-            logits_lo, size=x.shape[-2:], mode="bilinear", align_corners=False,
+            logits_lo,
+            size=x.shape[-2:],
+            mode="bilinear",
+            align_corners=False,
         )
         # MPS autograd will fail with "view size not compatible" if any
         # downstream loss op (CE/Dice) calls .view() on a non-contiguous tensor.

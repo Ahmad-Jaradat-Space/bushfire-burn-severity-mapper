@@ -4,6 +4,7 @@ Uses MPS bf16 autocast on Apple Silicon, with NaN-safe fp32 fallback. Mirrors
 both the configs/experiments/{unet,segformer}_multiclass.yaml schemas; the
 model factory is chosen by `experiment.model`.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -16,10 +17,9 @@ from pathlib import Path
 import numpy as np
 import rasterio
 import torch
-import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from src.evaluation.metrics import IGNORE_ID, summary
+from src.evaluation.metrics import summary
 from src.models.datasets import TileDataset, compute_normalisation
 from src.models.losses import combo_loss
 from src.utils.config import load_config
@@ -39,6 +39,7 @@ def _build_model(cfg):
     name = cfg.experiment.model
     if name == "unet":
         from src.models.unet_model import build_unet
+
         return build_unet(
             in_channels=cfg.unet.in_channels,
             num_classes=cfg.unet.num_classes,
@@ -49,6 +50,7 @@ def _build_model(cfg):
         )
     if name == "segformer":
         from src.models.segformer_model import SegformerWrapper
+
         return SegformerWrapper(
             in_channels=cfg.segformer.in_channels,
             num_classes=cfg.segformer.num_classes,
@@ -64,9 +66,16 @@ def _split_events(cfg) -> tuple[list[str], list[str], list[str]]:
     return list(cfg.events.train), list(cfg.events.val), list(cfg.events.test)
 
 
-def _sliding_window_predict(model, image: np.ndarray, mean: np.ndarray, std: np.ndarray,
-                            tile: int, stride: int, device: torch.device,
-                            num_classes: int = 4) -> np.ndarray:
+def _sliding_window_predict(
+    model,
+    image: np.ndarray,
+    mean: np.ndarray,
+    std: np.ndarray,
+    tile: int,
+    stride: int,
+    device: torch.device,
+    num_classes: int = 4,
+) -> np.ndarray:
     """Predict an entire H×W image with overlap averaging."""
     C, H, W = image.shape
     image = (image - mean[:, None, None]) / (std[:, None, None] + 1e-6)
@@ -93,17 +102,24 @@ def _sliding_window_predict(model, image: np.ndarray, mean: np.ndarray, std: np.
 def _write_uint8(path: Path, arr: np.ndarray, transform, crs) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     meta = {
-        "driver": "GTiff", "height": arr.shape[0], "width": arr.shape[1],
-        "count": 1, "dtype": "uint8", "crs": crs, "transform": transform,
-        "nodata": 255, "compress": "deflate", "tiled": True,
-        "blockxsize": 256, "blockysize": 256,
+        "driver": "GTiff",
+        "height": arr.shape[0],
+        "width": arr.shape[1],
+        "count": 1,
+        "dtype": "uint8",
+        "crs": crs,
+        "transform": transform,
+        "nodata": 255,
+        "compress": "deflate",
+        "tiled": True,
+        "blockxsize": 256,
+        "blockysize": 256,
     }
     with rasterio.open(path, "w", **meta) as dst:
         dst.write(arr[np.newaxis, ...])
 
 
-def train(config_path: str, fast_mode: bool = False,
-          overrides: list[str] | None = None) -> dict:
+def train(config_path: str, fast_mode: bool = False, overrides: list[str] | None = None) -> dict:
     cfg = load_config(config_path, overrides=overrides)
     set_seeds(cfg.project.seed)
 
@@ -112,7 +128,10 @@ def train(config_path: str, fast_mode: bool = False,
 
     # 1. Compute normalisation from the train set only
     train_ds_for_stats = TileDataset(
-        _index_paths(train_events), split="train", cfg=cfg, augment=False,
+        _index_paths(train_events),
+        split="train",
+        cfg=cfg,
+        augment=False,
     )
     stats_dir = REPO_ROOT / cfg.outputs.model_dir
     stats_dir.mkdir(parents=True, exist_ok=True)
@@ -126,28 +145,55 @@ def train(config_path: str, fast_mode: bool = False,
     max_tr = cfg.fast_mode.max_tiles_train if fast_mode else None
     max_va = cfg.fast_mode.max_tiles_val if fast_mode else None
 
-    train_ds = TileDataset(_index_paths(train_events), "train", cfg=cfg,
-                           augment=True, stats_path=stats_path, max_tiles=max_tr)
-    val_ds = TileDataset(_index_paths(val_events), "val", cfg=cfg,
-                         augment=False, stats_path=stats_path, max_tiles=max_va)
-    train_dl = DataLoader(train_ds, batch_size=cfg.train.batch_size, shuffle=True,
-                          num_workers=cfg.train.num_workers, pin_memory=cfg.train.pin_memory,
-                          drop_last=True)
-    val_dl = DataLoader(val_ds, batch_size=cfg.train.batch_size, shuffle=False,
-                        num_workers=cfg.train.num_workers, pin_memory=cfg.train.pin_memory)
-    log.info("DataLoaders: train=%d val=%d (batch=%d)",
-             len(train_ds), len(val_ds), cfg.train.batch_size)
+    train_ds = TileDataset(
+        _index_paths(train_events),
+        "train",
+        cfg=cfg,
+        augment=True,
+        stats_path=stats_path,
+        max_tiles=max_tr,
+    )
+    val_ds = TileDataset(
+        _index_paths(val_events),
+        "val",
+        cfg=cfg,
+        augment=False,
+        stats_path=stats_path,
+        max_tiles=max_va,
+    )
+    train_dl = DataLoader(
+        train_ds,
+        batch_size=cfg.train.batch_size,
+        shuffle=True,
+        num_workers=cfg.train.num_workers,
+        pin_memory=cfg.train.pin_memory,
+        drop_last=True,
+    )
+    val_dl = DataLoader(
+        val_ds,
+        batch_size=cfg.train.batch_size,
+        shuffle=False,
+        num_workers=cfg.train.num_workers,
+        pin_memory=cfg.train.pin_memory,
+    )
+    log.info(
+        "DataLoaders: train=%d val=%d (batch=%d)", len(train_ds), len(val_ds), cfg.train.batch_size
+    )
 
     device_info = pick_device(cfg.device.prefer)
     device = torch.device(device_info.name)
     log.info("Device: %s (fallback_enabled=%s)", device_info.name, device_info.fallback_enabled)
     if device_info.name == "mps" and not device_info.fallback_enabled:
-        log.warning("PYTORCH_ENABLE_MPS_FALLBACK is not set — some ops may error on MPS. "
-                    "Source scripts/setup_env.sh before running.")
+        log.warning(
+            "PYTORCH_ENABLE_MPS_FALLBACK is not set — some ops may error on MPS. "
+            "Source scripts/setup_env.sh before running."
+        )
 
     model = _build_model(cfg).to(device)
     optim = torch.optim.AdamW(
-        model.parameters(), lr=cfg.train.lr, weight_decay=cfg.train.weight_decay,
+        model.parameters(),
+        lr=cfg.train.lr,
+        weight_decay=cfg.train.weight_decay,
     )
 
     use_bf16 = device_info.name in ("mps", "cuda")
@@ -168,10 +214,13 @@ def train(config_path: str, fast_mode: bool = False,
             image = image.to(device, non_blocking=False)
             label = label.to(device, non_blocking=False)
             t0 = time.time()
-            with torch.autocast(device_type=device_info.name, dtype=autocast_dtype, enabled=use_bf16):
+            with torch.autocast(
+                device_type=device_info.name, dtype=autocast_dtype, enabled=use_bf16
+            ):
                 logits = model(image)
             loss, components = combo_loss(
-                logits, label,
+                logits,
+                label,
                 ce_weight=cfg.train.loss.ce_weight,
                 dice_weight=cfg.train.loss.dice_weight,
                 ignore_index=cfg.train.ignore_index,
@@ -201,9 +250,16 @@ def train(config_path: str, fast_mode: bool = False,
                     )
                 log.warning("Step %d took %.2fs (>3x baseline) but guard disabled.", step, dt)
             if step % cfg.train.log_every == 0:
-                log.info("  epoch=%d step=%d/%d loss=%.4f (ce=%.4f dice=%.4f) dt=%.2fs",
-                         epoch, step, len(train_dl), components["total"],
-                         components["ce"], components["dice"], dt)
+                log.info(
+                    "  epoch=%d step=%d/%d loss=%.4f (ce=%.4f dice=%.4f) dt=%.2fs",
+                    epoch,
+                    step,
+                    len(train_dl),
+                    components["total"],
+                    components["ce"],
+                    components["dice"],
+                    dt,
+                )
 
         train_loss = running / max(running_n, 1)
 
@@ -213,17 +269,26 @@ def train(config_path: str, fast_mode: bool = False,
         all_true = []
         with torch.no_grad():
             for image, _mask, label in val_dl:
-                image = image.to(device); label = label.to(device)
-                with torch.autocast(device_type=device_info.name, dtype=autocast_dtype, enabled=use_bf16):
+                image = image.to(device)
+                label = label.to(device)
+                with torch.autocast(
+                    device_type=device_info.name, dtype=autocast_dtype, enabled=use_bf16
+                ):
                     logits = model(image)
                 p = logits.float().argmax(dim=1).cpu().numpy().astype(np.uint8)
-                all_pred.append(p); all_true.append(label.cpu().numpy().astype(np.uint8))
+                all_pred.append(p)
+                all_true.append(label.cpu().numpy().astype(np.uint8))
         if all_pred:
             ps = np.concatenate([a.ravel() for a in all_pred])
             ts = np.concatenate([a.ravel() for a in all_true])
             s = summary(ps, ts, num_classes=4)
-            log.info("Epoch %d | train_loss=%.4f | val macro-IoU=%.3f macro-F1=%.3f",
-                     epoch, train_loss, s["macro_iou"], s["macro_f1"])
+            log.info(
+                "Epoch %d | train_loss=%.4f | val macro-IoU=%.3f macro-F1=%.3f",
+                epoch,
+                train_loss,
+                s["macro_iou"],
+                s["macro_f1"],
+            )
             history.append({"epoch": epoch, "train_loss": train_loss, "val": s})
             if s["macro_iou"] > best_macro_iou:
                 best_macro_iou = s["macro_iou"]
@@ -232,8 +297,9 @@ def train(config_path: str, fast_mode: bool = False,
             else:
                 no_improve += 1
                 if no_improve >= cfg.train.early_stop_patience:
-                    log.info("Early stop at epoch %d (no improvement for %d epochs).",
-                             epoch, no_improve)
+                    log.info(
+                        "Early stop at epoch %d (no improvement for %d epochs).", epoch, no_improve
+                    )
                     break
         else:
             log.info("Epoch %d | train_loss=%.4f | (no val tiles)", epoch, train_loss)
@@ -242,6 +308,7 @@ def train(config_path: str, fast_mode: bool = False,
     # Save history + final config snapshot
     (stats_dir / "history.json").write_text(json.dumps(history, indent=2))
     from omegaconf import OmegaConf
+
     (stats_dir / "config_snapshot.yaml").write_text(OmegaConf.to_yaml(cfg))
 
     # Inference on val + test events
@@ -252,15 +319,20 @@ def train(config_path: str, fast_mode: bool = False,
     mean = np.array(stats["mean"], dtype=np.float32)
     std = np.array(stats["std"], dtype=np.float32)
 
-    metrics_all: dict = {"history": history, "model": cfg.experiment.model,
-                         "train_events": train_events,
-                         "val_events": val_events, "test_events": test_events}
+    metrics_all: dict = {
+        "history": history,
+        "model": cfg.experiment.model,
+        "train_events": train_events,
+        "val_events": val_events,
+        "test_events": test_events,
+    }
     pred_dir = REPO_ROOT / cfg.outputs.prediction_dir
     metrics_dir = REPO_ROOT / cfg.outputs.metrics_dir
     pred_dir.mkdir(parents=True, exist_ok=True)
     metrics_dir.mkdir(parents=True, exist_ok=True)
 
     from src.features.stack_features import build_stack
+
     for label_key, events in (("val", val_events), ("test", test_events)):
         metrics_all[label_key] = {}
         for ev in events:
@@ -269,44 +341,84 @@ def train(config_path: str, fast_mode: bool = False,
                 log.warning("Skipping inference for %s — interim composites missing.", ev)
                 continue
             with rasterio.open(interim / "pre_stack_10m.tif") as ds:
-                pre = ds.read().astype(np.float32); transform = ds.transform; crs = ds.crs
+                pre = ds.read().astype(np.float32)
+                transform = ds.transform
+                crs = ds.crs
             with rasterio.open(interim / "post_stack_10m.tif") as ds:
                 post = ds.read().astype(np.float32)
             image = build_stack(pre, post)
             tile = int(cfg.data.tile_size)
             stride = tile // 2
-            pred = _sliding_window_predict(model, image, mean, std, tile, stride, device,
-                                           num_classes=4)
+            pred = _sliding_window_predict(
+                model, image, mean, std, tile, stride, device, num_classes=4
+            )
             with rasterio.open(interim / "label_10m.tif") as ds:
                 lab = ds.read(1)
             metrics_all[label_key][ev] = summary(pred, lab, num_classes=4)
             out_path = pred_dir / f"{ev}.tif"
             _write_uint8(out_path, pred, transform, crs)
             write_manifest(
-                out_path, event_id=ev,
+                out_path,
+                event_id=ev,
                 pipeline_step=f"{cfg.experiment.model}.predict",
-                inputs={"best_checkpoint": str(best_path.relative_to(REPO_ROOT)),
-                        "normalization": str(stats_path.relative_to(REPO_ROOT))},
+                inputs={
+                    "best_checkpoint": str(best_path.relative_to(REPO_ROOT)),
+                    "normalization": str(stats_path.relative_to(REPO_ROOT)),
+                },
                 crs=str(crs),
             )
-            log.info("[%s/%s] macro-IoU=%.3f", label_key, ev,
-                     metrics_all[label_key][ev]["macro_iou"])
+            log.info(
+                "[%s/%s] macro-IoU=%.3f", label_key, ev, metrics_all[label_key][ev]["macro_iou"]
+            )
 
     (metrics_dir / "metrics.json").write_text(json.dumps(metrics_all, indent=2))
+
+    # Experiment tracking (no-op if mlflow is absent).
+    from src.utils import tracking
+
+    with tracking.start_run(run_name=cfg.experiment.name):
+        tracking.log_params(
+            {
+                "model": cfg.experiment.model,
+                "split_mode": cfg.experiment.split_mode,
+                "epochs": epochs,
+                "lr": cfg.train.lr,
+                "batch_size": cfg.train.batch_size,
+                "fast_mode": fast_mode,
+            }
+        )
+        tracking.log_metrics({"best_val_macro_iou": float(best_macro_iou)})
+        for h in history:
+            if h.get("val"):
+                tracking.log_metrics(
+                    {
+                        "val_macro_iou": h["val"]["macro_iou"],
+                        "val_macro_f1": h["val"]["macro_f1"],
+                        "train_loss": h["train_loss"],
+                    },
+                    step=h["epoch"],
+                )
+        tracking.log_artifact(best_path)
+        tracking.log_artifact(metrics_dir / "metrics.json")
     return metrics_all
 
 
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--config", required=True)
-    p.add_argument("--fast-mode", action="store_true",
-                   help="Use cfg.fast_mode (5 epochs, tile subset, early stop).")
+    p.add_argument(
+        "--fast-mode",
+        action="store_true",
+        help="Use cfg.fast_mode (5 epochs, tile subset, early stop).",
+    )
     p.add_argument("overrides", nargs="*", help='OmegaConf dot-overrides e.g. "train.lr=5e-4"')
     args = p.parse_args()
     if "PYTORCH_ENABLE_MPS_FALLBACK" not in os.environ:
         os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
-        log.warning("Set PYTORCH_ENABLE_MPS_FALLBACK=1 in-process — "
-                    "for production runs, source scripts/setup_env.sh BEFORE python starts.")
+        log.warning(
+            "Set PYTORCH_ENABLE_MPS_FALLBACK=1 in-process — "
+            "for production runs, source scripts/setup_env.sh BEFORE python starts."
+        )
     train(args.config, fast_mode=args.fast_mode, overrides=args.overrides)
 
 

@@ -1,4 +1,5 @@
 """Train XGBoost on per-pixel features. Mirrors train_rf.py with the XGB API."""
+
 from __future__ import annotations
 
 import argparse
@@ -24,31 +25,41 @@ log = get_logger(__name__)
 def _write_uint8(path: Path, arr: np.ndarray, transform, crs) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     meta = {
-        "driver": "GTiff", "height": arr.shape[0], "width": arr.shape[1],
-        "count": 1, "dtype": "uint8", "crs": crs, "transform": transform,
-        "nodata": 255, "compress": "deflate", "tiled": True,
-        "blockxsize": 256, "blockysize": 256,
+        "driver": "GTiff",
+        "height": arr.shape[0],
+        "width": arr.shape[1],
+        "count": 1,
+        "dtype": "uint8",
+        "crs": crs,
+        "transform": transform,
+        "nodata": 255,
+        "compress": "deflate",
+        "tiled": True,
+        "blockxsize": 256,
+        "blockysize": 256,
     }
     with rasterio.open(path, "w", **meta) as dst:
         dst.write(arr[np.newaxis, ...])
 
 
-def train_xgb(config_path: str = "configs/experiments/xgb_multiclass.yaml",
-              overrides: list[str] | None = None) -> dict:
+def train_xgb(
+    config_path: str = "configs/experiments/xgb_multiclass.yaml", overrides: list[str] | None = None
+) -> dict:
     cfg = load_config(config_path, overrides=overrides)
     if cfg.experiment.split_mode == "vertical_slice":
         train_events = [cfg.experiment.event]
         val_events = [cfg.experiment.event]
         test_events = [cfg.experiment.event]
-        splits_train = ("train",); splits_val = ("val",); splits_test = ("test",)
+        splits_train = ("train",)
     else:
         train_events = list(cfg.events.train)
         val_events = list(cfg.events.val)
         test_events = list(cfg.events.test)
-        splits_train = splits_val = splits_test = ("train", "val", "test")
+        splits_train = ("train", "val", "test")
 
-    Xtr, ytr, feat_names = stack_events(train_events, splits_train,
-                                        pixels_per_class=cfg.sampling.pixels_per_class)
+    Xtr, ytr, feat_names = stack_events(
+        train_events, splits_train, pixels_per_class=cfg.sampling.pixels_per_class
+    )
     log.info("Training matrix: X=%s y=%s", Xtr.shape, ytr.shape)
 
     clf = XGBClassifier(
@@ -72,14 +83,20 @@ def train_xgb(config_path: str = "configs/experiments/xgb_multiclass.yaml",
     model_path = model_dir / "model.joblib"
     joblib.dump(clf, model_path)
 
-    importance = pd.DataFrame({
-        "feature": feat_names,
-        "importance": clf.feature_importances_,
-    }).sort_values("importance", ascending=False)
+    importance = pd.DataFrame(
+        {
+            "feature": feat_names,
+            "importance": clf.feature_importances_,
+        }
+    ).sort_values("importance", ascending=False)
     importance.to_csv(model_dir / "feature_importance.csv", index=False)
 
-    metrics_all: dict = {"train_events": train_events, "val_events": val_events,
-                         "test_events": test_events, "model": "xgboost"}
+    metrics_all: dict = {
+        "train_events": train_events,
+        "val_events": val_events,
+        "test_events": test_events,
+        "model": "xgboost",
+    }
     pred_dir = REPO_ROOT / cfg.outputs.prediction_dir
     metrics_dir = REPO_ROOT / cfg.outputs.metrics_dir
     pred_dir.mkdir(parents=True, exist_ok=True)
@@ -95,14 +112,20 @@ def train_xgb(config_path: str = "configs/experiments/xgb_multiclass.yaml",
             out_pred = pred_dir / f"{ev}.tif"
             _write_uint8(out_pred, pred, transform, crs)
             write_manifest(
-                out_pred, event_id=ev, pipeline_step="xgb.predict",
+                out_pred,
+                event_id=ev,
+                pipeline_step="xgb.predict",
                 inputs={"model_path": str(model_path.relative_to(REPO_ROOT))},
-                crs=str(crs), resampling=None,
+                crs=str(crs),
+                resampling=None,
             )
-            log.info("[%s/%s] macro-IoU=%.3f macro-F1=%.3f",
-                     label, ev,
-                     metrics_all[label][ev]["macro_iou"],
-                     metrics_all[label][ev]["macro_f1"])
+            log.info(
+                "[%s/%s] macro-IoU=%.3f macro-F1=%.3f",
+                label,
+                ev,
+                metrics_all[label][ev]["macro_iou"],
+                metrics_all[label][ev]["macro_f1"],
+            )
 
     (metrics_dir / "metrics.json").write_text(json.dumps(metrics_all, indent=2))
     return metrics_all
@@ -111,7 +134,7 @@ def train_xgb(config_path: str = "configs/experiments/xgb_multiclass.yaml",
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--config", default="configs/experiments/xgb_multiclass.yaml")
-    p.add_argument("overrides", nargs="*", help='OmegaConf dot-overrides')
+    p.add_argument("overrides", nargs="*", help="OmegaConf dot-overrides")
     args = p.parse_args()
     train_xgb(args.config, overrides=args.overrides)
 

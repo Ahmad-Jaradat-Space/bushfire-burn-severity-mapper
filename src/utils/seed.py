@@ -3,6 +3,7 @@
 Note: `PYTORCH_ENABLE_MPS_FALLBACK=1` must be exported BEFORE `torch` is imported.
 We set it in `scripts/*.sh` launchers, not here. This module assumes it's already set.
 """
+
 from __future__ import annotations
 
 import os
@@ -15,11 +16,13 @@ def set_seeds(seed: int = 42) -> None:
     random.seed(seed)
     try:
         import numpy as np
+
         np.random.seed(seed)
     except ImportError:
         pass
     try:
         import torch
+
         torch.manual_seed(seed)
         if torch.backends.mps.is_available():
             torch.mps.manual_seed(seed)

@@ -15,6 +15,7 @@ the GEEBAM 4-class layout used elsewhere in the project.
     0.27 < dNBR <= 0.66           -> 2  high (USGS moderate-low + moderate-high)
     dNBR > 0.66                   -> 3  very_high
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -30,8 +31,9 @@ def dnbr(pre: np.ndarray, post: np.ndarray, b08_idx: int = 3, b12_idx: int = 5) 
     return pre_nbr - post_nbr
 
 
-def dnbr_binary(d: np.ndarray, threshold: float = 0.10,
-                mask: np.ndarray | None = None) -> np.ndarray:
+def dnbr_binary(
+    d: np.ndarray, threshold: float = 0.10, mask: np.ndarray | None = None
+) -> np.ndarray:
     out = (d > threshold).astype(np.uint8)
     if mask is not None:
         out[~mask.astype(bool)] = IGNORE_ID

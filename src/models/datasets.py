@@ -9,6 +9,7 @@ Per-band z-score normalisation stats are computed from the TRAIN split only
 and persisted to outputs/normalization/<run>.json so val/test use the same
 statistics.
 """
+
 from __future__ import annotations
 
 import json
@@ -23,8 +24,9 @@ from src.features.stack_features import DEFAULT_LAYOUT, build_stack
 from src.utils.geo import REPO_ROOT
 
 
-def _augment(image: np.ndarray, label: np.ndarray, mask: np.ndarray,
-             cfg, rng: np.random.Generator) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def _augment(
+    image: np.ndarray, label: np.ndarray, mask: np.ndarray, cfg, rng: np.random.Generator
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     if rng.random() < float(cfg.augment.hflip):
         image = image[:, :, ::-1].copy()
         label = label[:, ::-1].copy()
@@ -52,9 +54,16 @@ def _augment(image: np.ndarray, label: np.ndarray, mask: np.ndarray,
 class TileDataset(Dataset):
     """Reads .npz tiles, builds the 18-channel feature stack, optional augment."""
 
-    def __init__(self, index_paths: list[Path], split: str, cfg=None,
-                 max_tiles: int | None = None, augment: bool = False,
-                 stats_path: Path | None = None, seed: int = 42):
+    def __init__(
+        self,
+        index_paths: list[Path],
+        split: str,
+        cfg=None,
+        max_tiles: int | None = None,
+        augment: bool = False,
+        stats_path: Path | None = None,
+        seed: int = 42,
+    ):
         frames = []
         for p in index_paths:
             if not p.exists():
@@ -87,7 +96,7 @@ class TileDataset(Dataset):
         # Cloud-masked pixels in the composite are NaN from nanmedian. Replace
         # with 0 so they don't poison normalisation / autocast; the label is
         # already 255 (ignore) there and won't contribute to the loss.
-        pre  = np.nan_to_num(pre,  nan=0.0, posinf=0.0, neginf=0.0)
+        pre = np.nan_to_num(pre, nan=0.0, posinf=0.0, neginf=0.0)
         post = np.nan_to_num(post, nan=0.0, posinf=0.0, neginf=0.0)
         image = build_stack(pre, post)
         image = np.nan_to_num(image, nan=0.0, posinf=0.0, neginf=0.0)
@@ -118,10 +127,10 @@ def compute_normalisation(dataset: TileDataset, max_tiles: int = 200) -> dict:
         # _load already does nan_to_num; defensively keep nan-safe ops anyway
         flat = np.nan_to_num(image.reshape(image.shape[0], -1), nan=0.0)
         sums += flat.sum(axis=1)
-        sqs += (flat ** 2).sum(axis=1)
+        sqs += (flat**2).sum(axis=1)
         n += flat.shape[1]
     mean = sums / max(n, 1)
-    var = (sqs / max(n, 1)) - mean ** 2
+    var = (sqs / max(n, 1)) - mean**2
     std = np.sqrt(np.maximum(var, 1e-12))
     return {
         "mean": mean.tolist(),

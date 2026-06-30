@@ -11,6 +11,7 @@ Outputs:
   outputs/metrics/<model>/<event>_stratified.json
   docs/figures/stratified_landcover_<model>_<event>.png
 """
+
 from __future__ import annotations
 
 import argparse
@@ -29,12 +30,12 @@ log = get_logger(__name__)
 
 # DEA Land Cover Level-3 collapsed to a coarse 6-group palette
 LANDCOVER_GROUPS = {
-    "woody":      [111, 112, 113, 114],
-    "shrubland":  [115, 116],
+    "woody": [111, 112, 113, 114],
+    "shrubland": [115, 116],
     "herbaceous": [117, 118, 124],
-    "cropland":   [119],
+    "cropland": [119],
     "built_bare": [220, 215, 216],
-    "water":      [221, 222, 223],
+    "water": [221, 222, 223],
 }
 SLOPE_BINS = [(0, 5), (5, 15), (15, 30), (30, 60), (60, 90)]
 
@@ -44,8 +45,9 @@ def _read_band(path: Path, band: int = 1):
         return ds.read(band)
 
 
-def stratify_by_landcover(pred: np.ndarray, true: np.ndarray, lc: np.ndarray,
-                          num_classes: int = 4) -> dict:
+def stratify_by_landcover(
+    pred: np.ndarray, true: np.ndarray, lc: np.ndarray, num_classes: int = 4
+) -> dict:
     out: dict = {}
     for group, codes in LANDCOVER_GROUPS.items():
         m = np.isin(lc, codes) & (true != IGNORE_ID) & (pred != IGNORE_ID)
@@ -56,8 +58,9 @@ def stratify_by_landcover(pred: np.ndarray, true: np.ndarray, lc: np.ndarray,
     return out
 
 
-def stratify_by_slope(pred: np.ndarray, true: np.ndarray, slope: np.ndarray,
-                      num_classes: int = 4) -> dict:
+def stratify_by_slope(
+    pred: np.ndarray, true: np.ndarray, slope: np.ndarray, num_classes: int = 4
+) -> dict:
     out: dict = {}
     for lo, hi in SLOPE_BINS:
         bin_name = f"{lo}-{hi}deg"
@@ -69,9 +72,11 @@ def stratify_by_slope(pred: np.ndarray, true: np.ndarray, slope: np.ndarray,
     return out
 
 
-def evaluate_event(model: str, event_id: str,
-                   pred_path_template: str = "outputs/predictions/{model}/{event}.tif",
-                   ) -> dict:
+def evaluate_event(
+    model: str,
+    event_id: str,
+    pred_path_template: str = "outputs/predictions/{model}/{event}.tif",
+) -> dict:
     pred_path = REPO_ROOT / pred_path_template.format(model=model, event=event_id)
     if not pred_path.exists():
         # baseline_dnbr predictions live in a subdir
@@ -104,14 +109,16 @@ def evaluate_event(model: str, event_id: str,
     log.info("Wrote %s", out_path)
 
     if "by_landcover" in report:
-        _plot_landcover_heatmap(report, model, event_id,
-                                REPO_ROOT / "docs" / "figures" /
-                                f"stratified_landcover_{model}_{event_id}.png")
+        _plot_landcover_heatmap(
+            report,
+            model,
+            event_id,
+            REPO_ROOT / "docs" / "figures" / f"stratified_landcover_{model}_{event_id}.png",
+        )
     return report
 
 
-def _plot_landcover_heatmap(report: dict, model: str, event_id: str,
-                            out_path: Path) -> Path:
+def _plot_landcover_heatmap(report: dict, model: str, event_id: str, out_path: Path) -> Path:
     groups = list(LANDCOVER_GROUPS.keys())
     metrics_names = ["macro_iou", "macro_f1", "accuracy"]
     M = np.zeros((len(groups), len(metrics_names)))
@@ -124,15 +131,24 @@ def _plot_landcover_heatmap(report: dict, model: str, event_id: str,
                 M[i, j] = r[m]
     fig, ax = plt.subplots(figsize=(6, 4))
     im = ax.imshow(M, cmap="viridis", vmin=0, vmax=1, aspect="auto")
-    ax.set_yticks(range(len(groups))); ax.set_yticklabels(groups)
-    ax.set_xticks(range(len(metrics_names))); ax.set_xticklabels(metrics_names)
+    ax.set_yticks(range(len(groups)))
+    ax.set_yticklabels(groups)
+    ax.set_xticks(range(len(metrics_names)))
+    ax.set_xticklabels(metrics_names)
     for i in range(M.shape[0]):
         for j in range(M.shape[1]):
             if np.isnan(M[i, j]):
                 ax.text(j, i, "—", ha="center", va="center", color="#aaa")
             else:
-                ax.text(j, i, f"{M[i, j]:.2f}", ha="center", va="center",
-                        color="white" if M[i, j] < 0.5 else "black", fontsize=9)
+                ax.text(
+                    j,
+                    i,
+                    f"{M[i, j]:.2f}",
+                    ha="center",
+                    va="center",
+                    color="white" if M[i, j] < 0.5 else "black",
+                    fontsize=9,
+                )
     ax.set_title(f"{model} on {event_id} — per-landcover metrics")
     fig.colorbar(im, ax=ax, shrink=0.7)
     out_path.parent.mkdir(parents=True, exist_ok=True)

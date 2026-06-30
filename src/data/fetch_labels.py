@@ -17,16 +17,16 @@ GEEBAM official colour ramp (from MapServer/legend endpoint):
 Internal class remap (see src/data/class_map.py):
   Unburnt → 0,  Low/Mod → 1,  High → 2,  Very High → 3,  background → 255 ignore
 """
+
 from __future__ import annotations
 
 import argparse
 import math
+from collections.abc import Iterator
 from io import BytesIO
 from pathlib import Path
-from typing import Iterator
 
 import numpy as np
-import pyproj
 import rasterio
 import requests
 from PIL import Image
@@ -42,7 +42,7 @@ GEEBAM_BASE = (
     "AUS_GEEBAM_Fire_Severity/MapServer"
 )
 GEEBAM_EXPORT = f"{GEEBAM_BASE}/export"
-GEEBAM_REQUEST_CRS_EPSG = 4326   # MapServer/export is happiest with WGS84 in/out
+GEEBAM_REQUEST_CRS_EPSG = 4326  # MapServer/export is happiest with WGS84 in/out
 GEEBAM_NATIVE_M = 40
 MAX_REQUEST_PX = 4000
 HTTP_TIMEOUT = 180
@@ -50,18 +50,20 @@ IGNORE_ID = 255
 
 # Official symbology — class label → RGB tuple → internal class ID
 LEGEND_TO_INTERNAL: dict[tuple[int, int, int], int] = {
-    (112, 168,   0): 0,   # Unburnt
-    (230, 152,   0): 1,   # Low and Moderate
-    (168,  56,   0): 2,   # High
-    (  0,   0,   0): 3,   # Very High
+    (112, 168, 0): 0,  # Unburnt
+    (230, 152, 0): 1,  # Low and Moderate
+    (168, 56, 0): 2,  # High
+    (0, 0, 0): 3,  # Very High
 }
 
 log = get_logger(__name__)
 
 
-def _request_tiles(bbox_wgs: tuple[float, float, float, float],
-                   pixel_m: int = GEEBAM_NATIVE_M,
-                   max_px: int = MAX_REQUEST_PX) -> Iterator[tuple[float, float, float, float, int, int]]:
+def _request_tiles(
+    bbox_wgs: tuple[float, float, float, float],
+    pixel_m: int = GEEBAM_NATIVE_M,
+    max_px: int = MAX_REQUEST_PX,
+) -> Iterator[tuple[float, float, float, float, int, int]]:
     """Yield (minx, miny, maxx, maxy, width_px, height_px) for each request tile.
 
     We approximate pixel-count from the WGS84 bbox using the cosine of latitude
@@ -107,15 +109,16 @@ def _rgb_to_class(rgba: np.ndarray) -> np.ndarray:
         closest_dist[mask] = d[mask]
     # Only accept matches within a tolerance; otherwise this isn't really a class
     # colour (it's the cream background or anti-aliasing artefact).
-    tolerance_sq = 30 * 30 * 3   # per-channel distance ~30 in any channel
+    tolerance_sq = 30 * 30 * 3  # per-channel distance ~30 in any channel
     out[closest_dist > tolerance_sq] = IGNORE_ID
     if alpha is not None:
         out[alpha < 128] = IGNORE_ID
     return out
 
 
-def _fetch_tile_rgba(bbox: tuple[float, float, float, float], width: int, height: int,
-                     session: requests.Session) -> np.ndarray:
+def _fetch_tile_rgba(
+    bbox: tuple[float, float, float, float], width: int, height: int, session: requests.Session
+) -> np.ndarray:
     """POST /export and return an RGBA [H, W, 4] uint8 array."""
     params = {
         "bbox": ",".join(f"{v:.6f}" for v in bbox),
@@ -132,9 +135,8 @@ def _fetch_tile_rgba(bbox: tuple[float, float, float, float], width: int, height
     return np.array(img)
 
 
-def fetch_geebam(event_id: str, out_dir: Path | None = None,
-                 dry_run: bool = False) -> Path:
-    feat = load_aoi(event_id)
+def fetch_geebam(event_id: str, out_dir: Path | None = None, dry_run: bool = False) -> Path:
+    load_aoi(event_id)  # validate the AOI exists/parses
     bbox_wgs = aoi_bbox_wgs84(event_id)
     log.info("AOI %s WGS84 bbox=%s", event_id, bbox_wgs)
 
@@ -158,8 +160,9 @@ def fetch_geebam(event_id: str, out_dir: Path | None = None,
                 "native_pixel_m": GEEBAM_NATIVE_M,
                 "bbox_wgs84": bbox_wgs,
                 "n_request_tiles": len(tiles),
-                "legend_to_internal": {f"rgb({r},{g},{b})": cls
-                                        for (r, g, b), cls in LEGEND_TO_INTERNAL.items()},
+                "legend_to_internal": {
+                    f"rgb({r},{g},{b})": cls for (r, g, b), cls in LEGEND_TO_INTERNAL.items()
+                },
                 "licence": "CC-BY 4.0",
                 "attribution": "AUS GEEBAM © Commonwealth of Australia 2020, licensed CC-BY 4.0.",
             },
@@ -173,8 +176,17 @@ def fetch_geebam(event_id: str, out_dir: Path | None = None,
     tile_arrays = []
     tile_bboxes = []
     for idx, (minx, miny, maxx, maxy, w, h) in enumerate(tiles):
-        log.info("  tile %d/%d  bbox=(%.3f,%.3f,%.3f,%.3f)  size=%dx%d",
-                 idx + 1, len(tiles), minx, miny, maxx, maxy, w, h)
+        log.info(
+            "  tile %d/%d  bbox=(%.3f,%.3f,%.3f,%.3f)  size=%dx%d",
+            idx + 1,
+            len(tiles),
+            minx,
+            miny,
+            maxx,
+            maxy,
+            w,
+            h,
+        )
         rgba = _fetch_tile_rgba((minx, miny, maxx, maxy), w, h, session)
         # MapServer/export inverts y: row 0 is at the top (maxy). The bbox we
         # pass is in (minx, miny, maxx, maxy); we'll let from_bounds handle it.
@@ -184,13 +196,26 @@ def fetch_geebam(event_id: str, out_dir: Path | None = None,
 
     # Write each tile as a tiny GeoTIFF, then merge
     tile_paths: list[Path] = []
-    for idx, ((minx, miny, maxx, maxy, w, h), arr) in enumerate(zip(tile_bboxes, tile_arrays)):
+    for idx, ((minx, miny, maxx, maxy, w, h), arr) in enumerate(
+        zip(tile_bboxes, tile_arrays, strict=False)
+    ):
         transform = from_bounds(minx, miny, maxx, maxy, width=w, height=h)
         tp = out_dir / f"_tile_{idx:03d}.tif"
         with rasterio.open(
-            tp, "w", driver="GTiff", height=h, width=w, count=1, dtype="uint8",
-            crs=f"EPSG:{GEEBAM_REQUEST_CRS_EPSG}", transform=transform, nodata=IGNORE_ID,
-            compress="deflate", tiled=True, blockxsize=256, blockysize=256,
+            tp,
+            "w",
+            driver="GTiff",
+            height=h,
+            width=w,
+            count=1,
+            dtype="uint8",
+            crs=f"EPSG:{GEEBAM_REQUEST_CRS_EPSG}",
+            transform=transform,
+            nodata=IGNORE_ID,
+            compress="deflate",
+            tiled=True,
+            blockxsize=256,
+            blockysize=256,
         ) as dst:
             dst.write(arr[np.newaxis])
         tile_paths.append(tp)
@@ -201,8 +226,14 @@ def fetch_geebam(event_id: str, out_dir: Path | None = None,
         srcs = [rasterio.open(p) for p in tile_paths]
         mosaic, transform = rio_merge(srcs, nodata=IGNORE_ID)
         meta = srcs[0].meta.copy()
-        meta.update({"height": mosaic.shape[1], "width": mosaic.shape[2],
-                     "transform": transform, "count": 1})
+        meta.update(
+            {
+                "height": mosaic.shape[1],
+                "width": mosaic.shape[2],
+                "transform": transform,
+                "count": 1,
+            }
+        )
         with rasterio.open(out_path, "w", **meta) as dst:
             dst.write(mosaic[0:1])
         for s in srcs:
@@ -215,25 +246,31 @@ def fetch_geebam(event_id: str, out_dir: Path | None = None,
     # CRS tag, not the filename suffix).
     out_3577 = out_dir / "label_native_3577.tif"
     with rasterio.open(out_path) as src:
-        from rasterio.warp import calculate_default_transform, reproject, Resampling
+        from rasterio.warp import Resampling, calculate_default_transform, reproject
+
         dst_crs = "EPSG:3577"
         transform, w, h = calculate_default_transform(
-            src.crs, dst_crs, src.width, src.height, *src.bounds)
+            src.crs, dst_crs, src.width, src.height, *src.bounds
+        )
         meta = src.meta.copy()
-        meta.update({"crs": dst_crs, "transform": transform, "width": w, "height": h,
-                     "nodata": IGNORE_ID})
+        meta.update(
+            {"crs": dst_crs, "transform": transform, "width": w, "height": h, "nodata": IGNORE_ID}
+        )
         with rasterio.open(out_3577, "w", **meta) as dst:
             reproject(
-                source=rasterio.band(src, 1), destination=rasterio.band(dst, 1),
-                src_crs=src.crs, dst_crs=dst_crs,
-                src_transform=src.transform, dst_transform=transform,
+                source=rasterio.band(src, 1),
+                destination=rasterio.band(dst, 1),
+                src_crs=src.crs,
+                dst_crs=dst_crs,
+                src_transform=src.transform,
+                dst_transform=transform,
                 resampling=Resampling.nearest,
             )
 
     with rasterio.open(out_3577) as ds:
         arr = ds.read(1)
     uniq, counts = np.unique(arr, return_counts=True)
-    hist = dict(zip(uniq.tolist(), counts.tolist()))
+    hist = dict(zip(uniq.tolist(), counts.tolist(), strict=False))
     log.info("Class histogram (final 3577): %s", hist)
 
     write_manifest(
@@ -249,8 +286,9 @@ def fetch_geebam(event_id: str, out_dir: Path | None = None,
             "bbox_wgs84": bbox_wgs,
             "n_request_tiles": len(tiles),
             "class_histogram": hist,
-            "legend_to_internal": {f"rgb({r},{g},{b})": cls
-                                    for (r, g, b), cls in LEGEND_TO_INTERNAL.items()},
+            "legend_to_internal": {
+                f"rgb({r},{g},{b})": cls for (r, g, b), cls in LEGEND_TO_INTERNAL.items()
+            },
             "licence": "CC-BY 4.0",
             "attribution": "AUS GEEBAM © Commonwealth of Australia 2020, licensed CC-BY 4.0.",
         },

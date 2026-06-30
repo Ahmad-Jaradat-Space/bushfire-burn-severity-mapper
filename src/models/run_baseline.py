@@ -5,6 +5,7 @@ Outputs:
   outputs/predictions/baseline_dnbr/<event>/binary_t<thr>.tif (per threshold)
   outputs/metrics/baseline_dnbr/<event>.json
 """
+
 from __future__ import annotations
 
 import argparse
@@ -33,16 +34,26 @@ def _read_band_stack(path: Path) -> tuple[np.ndarray, dict, object, object]:
 def _write_uint8(path: Path, arr: np.ndarray, transform, crs) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     meta = {
-        "driver": "GTiff", "height": arr.shape[0], "width": arr.shape[1],
-        "count": 1, "dtype": "uint8", "crs": crs, "transform": transform,
-        "nodata": 255, "compress": "deflate", "tiled": True,
-        "blockxsize": 256, "blockysize": 256,
+        "driver": "GTiff",
+        "height": arr.shape[0],
+        "width": arr.shape[1],
+        "count": 1,
+        "dtype": "uint8",
+        "crs": crs,
+        "transform": transform,
+        "nodata": 255,
+        "compress": "deflate",
+        "tiled": True,
+        "blockxsize": 256,
+        "blockysize": 256,
     }
     with rasterio.open(path, "w", **meta) as dst:
         dst.write(arr[np.newaxis, ...])
 
 
-def run_baseline_event(event_id: str, config_path: str = "configs/experiments/baseline_dnbr.yaml") -> dict:
+def run_baseline_event(
+    event_id: str, config_path: str = "configs/experiments/baseline_dnbr.yaml"
+) -> dict:
     cfg = load_config(config_path)
     interim = REPO_ROOT / "data" / "interim" / event_id
     out_pred = REPO_ROOT / "outputs" / "predictions" / "baseline_dnbr" / event_id
@@ -73,7 +84,9 @@ def run_baseline_event(event_id: str, config_path: str = "configs/experiments/ba
         event_id=event_id,
         pipeline_step="baseline_dnbr.multiclass",
         inputs={"thresholds": "USGS-style: 0.10/0.27/0.66"},
-        crs=str(crs), resampling=None, class_remap=None,
+        crs=str(crs),
+        resampling=None,
+        class_remap=None,
     )
 
     # Binary sweep
@@ -87,11 +100,18 @@ def run_baseline_event(event_id: str, config_path: str = "configs/experiments/ba
     out_metrics_path = out_metrics / f"{event_id}.json"
     out_metrics_path.write_text(json.dumps(metrics, indent=2))
     log.info("Wrote metrics to %s", out_metrics_path)
-    log.info("  Multiclass macro-IoU: %.3f  macro-F1: %.3f",
-             metrics["multiclass"]["macro_iou"], metrics["multiclass"]["macro_f1"])
+    log.info(
+        "  Multiclass macro-IoU: %.3f  macro-F1: %.3f",
+        metrics["multiclass"]["macro_iou"],
+        metrics["multiclass"]["macro_f1"],
+    )
     for row in binary:
-        log.info("  Binary t=%.2f  burnt IoU=%.3f  F1=%.3f",
-                 row["threshold"], row["iou_burnt"], row["f1_burnt"])
+        log.info(
+            "  Binary t=%.2f  burnt IoU=%.3f  F1=%.3f",
+            row["threshold"],
+            row["iou_burnt"],
+            row["f1_burnt"],
+        )
     return metrics
 
 

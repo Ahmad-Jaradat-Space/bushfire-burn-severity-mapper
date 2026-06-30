@@ -11,8 +11,8 @@ def _synth_pre_post(h=32, w=32, burn_ratio=0.5, seed=0):
     post = pre.copy()
     burn = np.zeros((h, w), dtype=bool)
     burn[:, : int(w * burn_ratio)] = True
-    post[3][burn] *= 0.2     # NIR collapse
-    post[5][burn] *= 1.6     # SWIR2 spike
+    post[3][burn] *= 0.2  # NIR collapse
+    post[5][burn] *= 1.6  # SWIR2 spike
     return pre, post, burn
 
 

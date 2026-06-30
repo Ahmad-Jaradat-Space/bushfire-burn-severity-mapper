@@ -1,0 +1,24 @@
+# Prithvi-EO-2.0-300M frozen-backbone probe.
+# The trainer is self-contained (`python -m src.models.train_prithvi`), so this
+# file documents the experiment for the record rather than being parsed by it.
+experiment:
+  name: prithvi_eventwise
+  model: prithvi
+  backbone: Prithvi-EO-2.0-300M        # terratorch_prithvi_eo_v2_300
+  frozen_backbone: true                # only the decoder trains (~2.6M params)
+  feature_kind: post_6band             # single-frame post-fire B02,B03,B04,B08,B11,B12
+  img_size: 224
+  split_mode: event_wise               # train Currowan+Gospers, hold out Kangaroo
+
+train:
+  epochs: 25
+  batch_size: 4
+  lr: 0.001
+  loss: { ce_weight: 0.5, dice_weight: 0.5 }
+  early_stop_patience: 6
+
+note: >
+  Foundation-model comparison method. A frozen 304M ViT pretrained on global HLS
+  imagery + a light upsampling decoder. Fed only the post-fire composite (no
+  engineered pre/post/delta features) it still beats the from-scratch U-Net on
+  event-wise hold-out — see figure 16 and the notebook.

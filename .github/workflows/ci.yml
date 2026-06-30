@@ -83,3 +83,12 @@ jobs:
         run: python -m src.viz.demo_assets --force-synthetic
       - name: Render comparison overview
         run: python -m src.viz.readme_panels --mode overview
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the CPU/Linux image (no push)
+        run: docker build -f docker/Dockerfile -t burn-severity:ci .
+

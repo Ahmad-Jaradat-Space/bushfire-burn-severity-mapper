@@ -8,6 +8,7 @@ Outputs:
   outputs/calibration/kangaroo_island_2019_2020/rf.json
   outputs/calibration/kangaroo_island_2019_2020/xgb.json
 """
+
 from __future__ import annotations
 
 import json
@@ -52,7 +53,7 @@ def calibration_for(model_path: Path, event_id: str = "kangaroo_island_2019_2020
 
     image, mask, label = _load_features_and_label(event_id)
     C, H, W = image.shape
-    flat = image.reshape(C, -1).T   # [H*W, 18]
+    flat = image.reshape(C, -1).T  # [H*W, 18]
     mask_flat = mask.ravel()
     label_flat = label.ravel()
 
@@ -63,7 +64,7 @@ def calibration_for(model_path: Path, event_id: str = "kangaroo_island_2019_2020
     feat_valid = flat[valid]
     label_valid = label_flat[valid]
 
-    proba = clf.predict_proba(feat_valid)   # [N, 4]
+    proba = clf.predict_proba(feat_valid)  # [N, 4]
     # P(burnt) = 1 - P(class 0 = unburnt) = sum of P(1) + P(2) + P(3)
     p_burnt = 1.0 - proba[:, 0]
 
@@ -88,7 +89,7 @@ def main():
     out_dir.mkdir(parents=True, exist_ok=True)
 
     for model_name, model_path in [
-        ("rf",  REPO_ROOT / "outputs" / "models" / "rf"  / "model.joblib"),
+        ("rf", REPO_ROOT / "outputs" / "models" / "rf" / "model.joblib"),
         ("xgb", REPO_ROOT / "outputs" / "models" / "xgb" / "model.joblib"),
     ]:
         if not model_path.exists():
@@ -97,8 +98,13 @@ def main():
         data = calibration_for(model_path)
         out = out_dir / f"{model_name}.json"
         out.write_text(json.dumps(data, indent=2))
-        log.info("Wrote %s — ECE=%.3f Brier=%.3f n=%d",
-                 out.relative_to(REPO_ROOT), data["ece"], data["brier"], data["n_valid"])
+        log.info(
+            "Wrote %s — ECE=%.3f Brier=%.3f n=%d",
+            out.relative_to(REPO_ROOT),
+            data["ece"],
+            data["brier"],
+            data["n_valid"],
+        )
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@
 Vertical-slice mode (default): trains and tests on the same event using a
 random tile split. M10 switches to event-wise splits.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -28,34 +29,48 @@ log = get_logger(__name__)
 def _write_uint8(path: Path, arr: np.ndarray, transform, crs) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     meta = {
-        "driver": "GTiff", "height": arr.shape[0], "width": arr.shape[1],
-        "count": 1, "dtype": "uint8", "crs": crs, "transform": transform,
-        "nodata": 255, "compress": "deflate", "tiled": True,
-        "blockxsize": 256, "blockysize": 256,
+        "driver": "GTiff",
+        "height": arr.shape[0],
+        "width": arr.shape[1],
+        "count": 1,
+        "dtype": "uint8",
+        "crs": crs,
+        "transform": transform,
+        "nodata": 255,
+        "compress": "deflate",
+        "tiled": True,
+        "blockxsize": 256,
+        "blockysize": 256,
     }
     with rasterio.open(path, "w", **meta) as dst:
         dst.write(arr[np.newaxis, ...])
 
 
-def train_rf(config_path: str = "configs/experiments/rf_multiclass.yaml",
-             overrides: list[str] | None = None) -> dict:
+def train_rf(
+    config_path: str = "configs/experiments/rf_multiclass.yaml", overrides: list[str] | None = None
+) -> dict:
     cfg = load_config(config_path, overrides=overrides)
     if cfg.experiment.split_mode == "vertical_slice":
         train_events = [cfg.experiment.event]
         val_events = [cfg.experiment.event]
         test_events = [cfg.experiment.event]
-        splits_train, splits_val, splits_test = ("train",), ("val",), ("test",)
+        splits_train = ("train",)
     else:
         train_events = list(cfg.events.train)
         val_events = list(cfg.events.val)
         test_events = list(cfg.events.test)
-        splits_train = splits_val = splits_test = ("train", "val", "test")
+        splits_train = ("train", "val", "test")
 
     log.info("Train events: %s", train_events)
-    Xtr, ytr, feat_names = stack_events(train_events, splits_train,
-                                        pixels_per_class=cfg.sampling.pixels_per_class)
-    log.info("Training matrix: X=%s y=%s class hist=%s",
-             Xtr.shape, ytr.shape, dict(zip(*np.unique(ytr, return_counts=True))))
+    Xtr, ytr, feat_names = stack_events(
+        train_events, splits_train, pixels_per_class=cfg.sampling.pixels_per_class
+    )
+    log.info(
+        "Training matrix: X=%s y=%s class hist=%s",
+        Xtr.shape,
+        ytr.shape,
+        dict(zip(*np.unique(ytr, return_counts=True), strict=False)),
+    )
 
     clf = RandomForestClassifier(
         n_estimators=cfg.rf.n_estimators,
@@ -66,25 +81,31 @@ def train_rf(config_path: str = "configs/experiments/rf_multiclass.yaml",
         random_state=cfg.rf.random_state,
     )
     clf.fit(Xtr, ytr)
-    log.info("Fitted RandomForest (%d trees, max_depth=%s)",
-             cfg.rf.n_estimators, cfg.rf.max_depth)
+    log.info("Fitted RandomForest (%d trees, max_depth=%s)", cfg.rf.n_estimators, cfg.rf.max_depth)
 
     model_dir = REPO_ROOT / cfg.outputs.model_dir
     model_dir.mkdir(parents=True, exist_ok=True)
     model_path = model_dir / "model.joblib"
     joblib.dump(clf, model_path)
 
-    importance = pd.DataFrame({
-        "feature": feat_names,
-        "importance": clf.feature_importances_,
-    }).sort_values("importance", ascending=False)
+    importance = pd.DataFrame(
+        {
+            "feature": feat_names,
+            "importance": clf.feature_importances_,
+        }
+    ).sort_values("importance", ascending=False)
     importance.to_csv(model_dir / "feature_importance.csv", index=False)
-    log.info("Top 5 features: %s",
-             list(importance.head(5)[["feature", "importance"]].itertuples(index=False, name=None)))
+    log.info(
+        "Top 5 features: %s",
+        list(importance.head(5)[["feature", "importance"]].itertuples(index=False, name=None)),
+    )
 
-    metrics_all: dict = {"train_events": train_events,
-                         "val_events": val_events, "test_events": test_events,
-                         "model": "random_forest"}
+    metrics_all: dict = {
+        "train_events": train_events,
+        "val_events": val_events,
+        "test_events": test_events,
+        "model": "random_forest",
+    }
     pred_dir = REPO_ROOT / cfg.outputs.prediction_dir
     pred_dir.mkdir(parents=True, exist_ok=True)
     metrics_dir = REPO_ROOT / cfg.outputs.metrics_dir
@@ -104,12 +125,16 @@ def train_rf(config_path: str = "configs/experiments/rf_multiclass.yaml",
                 event_id=ev,
                 pipeline_step="rf.predict",
                 inputs={"model_path": str(model_path.relative_to(REPO_ROOT))},
-                crs=str(crs), resampling=None,
+                crs=str(crs),
+                resampling=None,
             )
-            log.info("[%s/%s] macro-IoU=%.3f macro-F1=%.3f",
-                     label, ev,
-                     metrics_all[label][ev]["macro_iou"],
-                     metrics_all[label][ev]["macro_f1"])
+            log.info(
+                "[%s/%s] macro-IoU=%.3f macro-F1=%.3f",
+                label,
+                ev,
+                metrics_all[label][ev]["macro_iou"],
+                metrics_all[label][ev]["macro_f1"],
+            )
 
     metrics_path = metrics_dir / "metrics.json"
     metrics_path.write_text(json.dumps(metrics_all, indent=2))
@@ -120,7 +145,7 @@ def train_rf(config_path: str = "configs/experiments/rf_multiclass.yaml",
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--config", default="configs/experiments/rf_multiclass.yaml")
-    p.add_argument("overrides", nargs="*", help='OmegaConf dot-overrides')
+    p.add_argument("overrides", nargs="*", help="OmegaConf dot-overrides")
     args = p.parse_args()
     train_rf(args.config, overrides=args.overrides)
 

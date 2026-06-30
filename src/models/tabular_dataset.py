@@ -5,9 +5,8 @@ the 18-channel feature stack on the fly, drops cloud-occluded and ignore-label
 pixels, then **stratified-samples** N pixels per class per tile so that minority
 severity classes (high, very_high) aren't drowned by unburnt pixels.
 """
-from __future__ import annotations
 
-from pathlib import Path
+from __future__ import annotations
 
 import numpy as np
 import pandas as pd
@@ -18,15 +17,17 @@ from src.utils.geo import REPO_ROOT
 
 
 def _flat_features(pre: np.ndarray, post: np.ndarray) -> np.ndarray:
-    stack = build_stack(pre, post)                 # [18, H, W]
-    return stack.reshape(stack.shape[0], -1).T     # [H*W, 18]
+    stack = build_stack(pre, post)  # [18, H, W]
+    return stack.reshape(stack.shape[0], -1).T  # [H*W, 18]
 
 
-def sample_event_pixels(event_id: str,
-                        splits: tuple[str, ...] = ("train",),
-                        pixels_per_class: int = 50_000,
-                        seed: int = 42,
-                        num_classes: int = 4) -> tuple[np.ndarray, np.ndarray, list[str]]:
+def sample_event_pixels(
+    event_id: str,
+    splits: tuple[str, ...] = ("train",),
+    pixels_per_class: int = 50_000,
+    seed: int = 42,
+    num_classes: int = 4,
+) -> tuple[np.ndarray, np.ndarray, list[str]]:
     """Return (X, y, feature_names) sampled from this event's tiles.
 
     Per-class stratification is performed within each (event, split) — we draw
@@ -55,7 +56,7 @@ def sample_event_pixels(event_id: str,
         valid = mask & (label != IGNORE_ID)
         if not valid.any():
             continue
-        feat = _flat_features(pre, post)         # [H*W, 18]
+        feat = _flat_features(pre, post)  # [H*W, 18]
         lab_flat = label.ravel()
         valid_flat = valid.ravel()
 
@@ -72,22 +73,30 @@ def sample_event_pixels(event_id: str,
             bucket_X[c].append(feat[chosen])
             bucket_y[c].append(np.full(take, c, dtype=np.uint8))
 
-    X_all = np.concatenate([np.concatenate(v) for v in bucket_X.values() if v], axis=0) \
-        if any(bucket_X.values()) else np.zeros((0, 18), dtype=np.float32)
-    y_all = np.concatenate([np.concatenate(v) for v in bucket_y.values() if v], axis=0) \
-        if any(bucket_y.values()) else np.zeros((0,), dtype=np.uint8)
+    X_all = (
+        np.concatenate([np.concatenate(v) for v in bucket_X.values() if v], axis=0)
+        if any(bucket_X.values())
+        else np.zeros((0, 18), dtype=np.float32)
+    )
+    y_all = (
+        np.concatenate([np.concatenate(v) for v in bucket_y.values() if v], axis=0)
+        if any(bucket_y.values())
+        else np.zeros((0,), dtype=np.uint8)
+    )
     return X_all, y_all, list(DEFAULT_LAYOUT)
 
 
-def stack_events(event_ids: list[str], splits: tuple[str, ...],
-                 pixels_per_class: int = 50_000,
-                 seed: int = 42) -> tuple[np.ndarray, np.ndarray, list[str]]:
+def stack_events(
+    event_ids: list[str], splits: tuple[str, ...], pixels_per_class: int = 50_000, seed: int = 42
+) -> tuple[np.ndarray, np.ndarray, list[str]]:
     Xs, ys = [], []
     feature_names: list[str] = []
     for ev in event_ids:
         X, y, names = sample_event_pixels(ev, splits, pixels_per_class, seed)
         if X.size > 0:
-            Xs.append(X); ys.append(y); feature_names = names
+            Xs.append(X)
+            ys.append(y)
+            feature_names = names
     if not Xs:
         raise ValueError(f"No pixels sampled from events={event_ids} splits={splits}")
     return np.concatenate(Xs), np.concatenate(ys), feature_names
@@ -96,6 +105,7 @@ def stack_events(event_ids: list[str], splits: tuple[str, ...],
 def predict_full_event(model, event_id: str) -> tuple[np.ndarray, object, object]:
     """Predict the full interim composite for an event using a fitted sklearn-like model."""
     import rasterio
+
     interim = REPO_ROOT / "data" / "interim" / event_id
     with rasterio.open(interim / "pre_stack_10m.tif") as ds:
         pre = ds.read().astype(np.float32)
@@ -109,7 +119,7 @@ def predict_full_event(model, event_id: str) -> tuple[np.ndarray, object, object
         mpost = ds.read(1)
     mask = (mpre & mpost).astype(bool)
 
-    feat = _flat_features(pre, post)              # [H*W, 18]
+    feat = _flat_features(pre, post)  # [H*W, 18]
     pred = np.full(feat.shape[0], IGNORE_ID, dtype=np.uint8)
     valid_flat = mask.ravel()
     if valid_flat.any():

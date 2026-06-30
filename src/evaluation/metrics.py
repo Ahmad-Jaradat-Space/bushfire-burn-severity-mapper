@@ -3,6 +3,7 @@
 All functions operate on flattened uint8 arrays and treat `ignore_index`
 pixels as not-present in both prediction and truth.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -10,8 +11,9 @@ import numpy as np
 IGNORE_ID = 255
 
 
-def confusion_matrix(pred: np.ndarray, true: np.ndarray, num_classes: int,
-                     ignore_index: int = IGNORE_ID) -> np.ndarray:
+def confusion_matrix(
+    pred: np.ndarray, true: np.ndarray, num_classes: int, ignore_index: int = IGNORE_ID
+) -> np.ndarray:
     p = pred.ravel()
     t = true.ravel()
     valid = (t != ignore_index) & (p != ignore_index)
@@ -49,8 +51,9 @@ def precision_recall(cm: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return _safe_div(tp, tp + fp), _safe_div(tp, tp + fn)
 
 
-def summary(pred: np.ndarray, true: np.ndarray, num_classes: int,
-            ignore_index: int = IGNORE_ID) -> dict:
+def summary(
+    pred: np.ndarray, true: np.ndarray, num_classes: int, ignore_index: int = IGNORE_ID
+) -> dict:
     cm = confusion_matrix(pred, true, num_classes, ignore_index)
     iou = per_class_iou(cm)
     f1 = per_class_f1(cm)
@@ -72,8 +75,7 @@ def summary(pred: np.ndarray, true: np.ndarray, num_classes: int,
     }
 
 
-def binary_summary(pred: np.ndarray, true: np.ndarray,
-                   ignore_index: int = IGNORE_ID) -> dict:
+def binary_summary(pred: np.ndarray, true: np.ndarray, ignore_index: int = IGNORE_ID) -> dict:
     """Burnt vs unburnt: class 0 = unburnt, classes 1+ = burnt."""
     p = pred.copy()
     t = true.copy()

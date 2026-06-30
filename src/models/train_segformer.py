@@ -1,4 +1,5 @@
 """Train SegFormer-B0 via the shared segmenter driver."""
+
 from __future__ import annotations
 
 import argparse
@@ -10,7 +11,7 @@ def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--config", default="configs/experiments/segformer_multiclass.yaml")
     p.add_argument("--fast-mode", action="store_true")
-    p.add_argument("overrides", nargs="*", help='OmegaConf dot-overrides')
+    p.add_argument("overrides", nargs="*", help="OmegaConf dot-overrides")
     args = p.parse_args()
     train(args.config, fast_mode=args.fast_mode, overrides=args.overrides)
 

@@ -68,6 +68,35 @@ All metric tables and figures are regenerated from saved prediction GeoTIFFs by 
 5. **Topographic shadow can masquerade as burn.** Steep south-facing slopes can look dark in post-fire imagery even when unburnt. The slope-stratified metric is the diagnostic for this.
 6. **Generalisation across fires is fragile.** Per-band normalisation statistics are computed from the train events only; whether the U-Net and SegFormer generalise to the test event (East Gippsland) is the *real* test of these models. Random-tile metrics from a single AOI flatter the result.
 
+## Uncertainty, evaluation rigor, and foundation models
+
+The benchmark is reported with the statistical and uncertainty machinery needed
+to make its figures trustworthy — and to keep them honest about what they don't
+know:
+
+- **Significance, not just point estimates.** Macro-IoU differences carry
+  spatial-block bootstrap 95% CIs and McNemar tests (`src/evaluation/uncertainty.py`).
+  The U-Net's edge over the ΔNBR baseline is **not** statistically significant
+  (p ≈ 0.06); the frozen **Prithvi-EO-2.0** foundation model's edge **is**
+  (Δ +0.06, p < 0.001). A naïve per-pixel test over millions of correlated pixels
+  would have over-claimed every difference.
+- **Calibrated uncertainty.** Per-pixel MC-dropout entropy (epistemic vs
+  aleatoric) and split-conformal prediction sets (`src/evaluation/{uq_maps,conformal}.py`)
+  give coverage guarantees; under transfer the 90% sets are near-maximal — the
+  model honestly reports that it is unsure.
+- **Design-based accuracy.** Olofsson area-adjusted estimates with CIs
+  (`src/evaluation/area_estimation.py`) correct the biased pixel-count areas. Note:
+  applied wall-to-wall the SEs are optimistic; a stratified probability sample
+  (`src/data/spatial_sampling.py`) is required for an operational interval.
+- **Confounder control.** A cluster-robust logistic GLM (`src/stats/confounders.py`)
+  shows that, controlling for severity class and burn-signal magnitude, **slope is
+  not a significant driver of error** — the terrain-shadow worry is a confound,
+  not a cause, on this scene.
+- **Foundation-model caveat.** The Prithvi result is a single-frame, frozen-backbone
+  linear probe; a temporal input and an unfrozen fine-tune would likely improve it,
+  and the labels remain a proxy. The direction (pretrained features transfer across
+  biomes) is the load-bearing claim, not the absolute number.
+
 ## Ethical considerations
 
 - **Non-operational** boilerplate appears in the README, in `docs/demo/non_expert_panel.md`, in this model card, and in every public-facing figure.

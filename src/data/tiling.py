@@ -14,12 +14,13 @@ Tiles are skipped if too cloud-occluded (>50% non-clear) or too label-empty
 (>90% ignore). Tile splits assigned by the event-wise policy in config.yaml,
 or by random tile split for the vertical-slice smoke-test mode.
 """
+
 from __future__ import annotations
 
 import argparse
 import random
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator
 
 import numpy as np
 import pandas as pd
@@ -63,18 +64,20 @@ def _event_split(event_id: str, cfg) -> str:
     return "train"
 
 
-def tile_event(event_id: str,
-               cfg_path: str = "configs/config.yaml",
-               max_cloud_frac: float = 0.5,
-               max_ignore_frac: float = 0.9,
-               split_mode: str = "event_wise",
-               seed: int = 42) -> Path:
+def tile_event(
+    event_id: str,
+    cfg_path: str = "configs/config.yaml",
+    max_cloud_frac: float = 0.5,
+    max_ignore_frac: float = 0.9,
+    split_mode: str = "event_wise",
+    seed: int = 42,
+) -> Path:
     cfg = load_config(cfg_path)
     interim = REPO_ROOT / "data" / "interim" / event_id
     out_root = REPO_ROOT / "data" / "processed" / "tiles" / event_id
     out_root.mkdir(parents=True, exist_ok=True)
 
-    pre = _read_band_stack(interim / "pre_stack_10m.tif").astype(np.float32)    # [6, H, W]
+    pre = _read_band_stack(interim / "pre_stack_10m.tif").astype(np.float32)  # [6, H, W]
     post = _read_band_stack(interim / "post_stack_10m.tif").astype(np.float32)
     with rasterio.open(interim / "mask_pre_10m.tif") as ds:
         mpre = ds.read(1)
@@ -83,7 +86,7 @@ def tile_event(event_id: str,
     with rasterio.open(interim / "label_10m.tif") as ds:
         label = ds.read(1)
 
-    mask = (mpre & mpost).astype(np.uint8)   # 1 where both clear
+    mask = (mpre & mpost).astype(np.uint8)  # 1 where both clear
     _, H, W = pre.shape
     tile = int(cfg.data.tile_size)
     stride = int(cfg.data.tile_stride)
@@ -96,8 +99,8 @@ def tile_event(event_id: str,
     n_total = 0
     for y, x in iter_tile_windows(H, W, tile, stride):
         n_total += 1
-        m = mask[y:y + tile, x:x + tile]
-        lab = label[y:y + tile, x:x + tile]
+        m = mask[y : y + tile, x : x + tile]
+        lab = label[y : y + tile, x : x + tile]
         if m.mean() < (1.0 - max_cloud_frac):
             n_drop_cloud += 1
             continue
@@ -105,30 +108,42 @@ def tile_event(event_id: str,
             n_drop_ignore += 1
             continue
 
-        split = (_vertical_slice_split(rng) if split_mode == "random_tile"
-                 else _event_split(event_id, cfg))
+        split = (
+            _vertical_slice_split(rng)
+            if split_mode == "random_tile"
+            else _event_split(event_id, cfg)
+        )
         out_dir = out_root / split
         out_dir.mkdir(parents=True, exist_ok=True)
         tile_path = out_dir / f"tile_{n_kept:05d}.npz"
         np.savez_compressed(
             tile_path,
-            pre=pre[:, y:y + tile, x:x + tile],
-            post=post[:, y:y + tile, x:x + tile],
+            pre=pre[:, y : y + tile, x : x + tile],
+            post=post[:, y : y + tile, x : x + tile],
             mask=m,
             label=lab,
         )
-        rows.append({
-            "event_id": event_id,
-            "tile_path": str(tile_path.relative_to(REPO_ROOT)),
-            "split": split,
-            "y": y, "x": x,
-            "clear_frac": float(m.mean()),
-            "label_valid_frac": float((lab != 255).mean()),
-        })
+        rows.append(
+            {
+                "event_id": event_id,
+                "tile_path": str(tile_path.relative_to(REPO_ROOT)),
+                "split": split,
+                "y": y,
+                "x": x,
+                "clear_frac": float(m.mean()),
+                "label_valid_frac": float((lab != 255).mean()),
+            }
+        )
         n_kept += 1
 
-    log.info("[%s] %d windows -> kept %d (cloud drop=%d, ignore drop=%d)",
-             event_id, n_total, n_kept, n_drop_cloud, n_drop_ignore)
+    log.info(
+        "[%s] %d windows -> kept %d (cloud drop=%d, ignore drop=%d)",
+        event_id,
+        n_total,
+        n_kept,
+        n_drop_cloud,
+        n_drop_ignore,
+    )
 
     index_path = REPO_ROOT / "data" / "processed" / f"tile_index_{event_id}.parquet"
     index_path.parent.mkdir(parents=True, exist_ok=True)

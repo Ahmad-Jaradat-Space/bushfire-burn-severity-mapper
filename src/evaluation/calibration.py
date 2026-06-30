@@ -5,6 +5,7 @@ Inputs:
                                 the softmax of U-Net/SegFormer logits
   true        uint8   [H, W]   internal class IDs (0=unburnt; 1+=burnt; 255 ignore)
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -15,8 +16,7 @@ import numpy as np
 from src.evaluation.metrics import IGNORE_ID
 
 
-def reliability_data(pred_proba: np.ndarray, true: np.ndarray,
-                     n_bins: int = 10) -> dict:
+def reliability_data(pred_proba: np.ndarray, true: np.ndarray, n_bins: int = 10) -> dict:
     valid = true != IGNORE_ID
     p = pred_proba.ravel()[valid.ravel()]
     t = (true.ravel()[valid.ravel()] > 0).astype(np.float32)
@@ -52,12 +52,13 @@ def plot_reliability(data: dict, out_path: Path, title: str = "") -> Path:
     ax.plot([0, 1], [0, 1], "--", color="#999", label="perfect calibration")
     # Bin centres weighted by count
     sizes = 50 + 250 * (bin_n / max(bin_n.max(), 1))
-    ax.scatter(bin_mean_p[bin_n > 0], bin_mean_t[bin_n > 0],
-               s=sizes[bin_n > 0], alpha=0.7)
+    ax.scatter(bin_mean_p[bin_n > 0], bin_mean_t[bin_n > 0], s=sizes[bin_n > 0], alpha=0.7)
     ax.set_xlabel("Predicted P(burnt)")
     ax.set_ylabel("Empirical fraction burnt")
     ax.set_title(f"{title}\nECE={data['ece']:.3f}  Brier={data['brier']:.3f}", fontsize=10)
-    ax.set_xlim(0, 1); ax.set_ylim(0, 1); ax.set_aspect("equal")
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.set_aspect("equal")
     ax.grid(alpha=0.3)
     ax.legend(loc="upper left", fontsize=9)
     out_path.parent.mkdir(parents=True, exist_ok=True)

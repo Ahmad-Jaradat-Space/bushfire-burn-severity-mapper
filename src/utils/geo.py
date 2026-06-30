@@ -1,4 +1,5 @@
 """Geo helpers: AOI loading, UTM picker, S2-grid snap."""
+
 from __future__ import annotations
 
 import json

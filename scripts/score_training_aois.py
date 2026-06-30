@@ -4,6 +4,7 @@ Loads each prediction GeoTIFF and the aligned label, computes the
 src.evaluation.metrics.summary (macro-IoU, macro-F1, per-class IoU),
 and writes the result to outputs/metrics/per_aoi_summary.json.
 """
+
 from __future__ import annotations
 
 import json
@@ -20,11 +21,11 @@ log = get_logger(__name__)
 
 EVENTS = ["currowan_2019_2020", "gospers_mountain_2019_2020", "kangaroo_island_2019_2020"]
 MODELS = {
-    "baseline_dnbr":  "outputs/predictions/baseline_dnbr/{ev}/multiclass.tif",
-    "rf":             "outputs/predictions/rf_multiclass/{ev}.tif",
-    "xgb":            "outputs/predictions/xgb_multiclass/{ev}.tif",
-    "unet":           "outputs/predictions/unet_multiclass/{ev}.tif",
-    "segformer":      "outputs/predictions/segformer_multiclass/{ev}.tif",
+    "baseline_dnbr": "outputs/predictions/baseline_dnbr/{ev}/multiclass.tif",
+    "rf": "outputs/predictions/rf_multiclass/{ev}.tif",
+    "xgb": "outputs/predictions/xgb_multiclass/{ev}.tif",
+    "unet": "outputs/predictions/unet_multiclass/{ev}.tif",
+    "segformer": "outputs/predictions/segformer_multiclass/{ev}.tif",
 }
 
 
@@ -51,11 +52,16 @@ def main() -> None:
             m = summary(pred, label, num_classes=4)
             out[ev][model_name] = {
                 "macro_iou": float(m["macro_iou"]),
-                "macro_f1":  float(m["macro_f1"]),
+                "macro_f1": float(m["macro_f1"]),
                 "per_class_iou": [float(x) for x in m["per_class_iou"]],
             }
-            log.info("[%s/%s] macro-IoU=%.3f macro-F1=%.3f",
-                     ev, model_name, m["macro_iou"], m["macro_f1"])
+            log.info(
+                "[%s/%s] macro-IoU=%.3f macro-F1=%.3f",
+                ev,
+                model_name,
+                m["macro_iou"],
+                m["macro_f1"],
+            )
 
     out_path = REPO_ROOT / "outputs" / "metrics" / "per_aoi_summary.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)

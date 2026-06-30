@@ -3,6 +3,7 @@
 All formulas operate on band reflectance in [0, 1] (scaled from Sentinel-2 L2A
 DN by 1/10000). Numpy ndarray or xarray DataArray inputs are both supported.
 """
+
 from __future__ import annotations
 
 

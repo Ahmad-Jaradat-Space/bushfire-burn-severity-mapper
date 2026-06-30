@@ -9,6 +9,7 @@ Inputs:
 Output:
   data/interim/<event>/label_10m.tif                          (snapped)
 """
+
 from __future__ import annotations
 
 import argparse
@@ -28,7 +29,9 @@ log = get_logger(__name__)
 
 def align(event_id: str) -> Path:
     interim = REPO_ROOT / "data" / "interim" / event_id
-    label_src = REPO_ROOT / "data" / "raw" / "labels" / "aus_geebam" / event_id / "label_native_3577.tif"
+    label_src = (
+        REPO_ROOT / "data" / "raw" / "labels" / "aus_geebam" / event_id / "label_native_3577.tif"
+    )
     ref = interim / "post_stack_10m.tif"
     if not label_src.exists():
         raise FileNotFoundError(label_src)
@@ -43,32 +46,48 @@ def align(event_id: str) -> Path:
 
     with rasterio.open(label_src) as src:
         meta = {
-            "driver": "GTiff", "height": target_h, "width": target_w,
-            "count": 1, "dtype": "uint8",
-            "crs": target_crs, "transform": target_transform,
-            "nodata": 255, "compress": "deflate", "tiled": True,
-            "blockxsize": 256, "blockysize": 256,
+            "driver": "GTiff",
+            "height": target_h,
+            "width": target_w,
+            "count": 1,
+            "dtype": "uint8",
+            "crs": target_crs,
+            "transform": target_transform,
+            "nodata": 255,
+            "compress": "deflate",
+            "tiled": True,
+            "blockxsize": 256,
+            "blockysize": 256,
         }
         with rasterio.open(out, "w", **meta) as dst:
             reproject(
-                source=rasterio.band(src, 1), destination=rasterio.band(dst, 1),
-                src_crs=src.crs, dst_crs=target_crs,
-                src_transform=src.transform, dst_transform=target_transform,
-                src_nodata=255, dst_nodata=255,
+                source=rasterio.band(src, 1),
+                destination=rasterio.band(dst, 1),
+                src_crs=src.crs,
+                dst_crs=target_crs,
+                src_transform=src.transform,
+                dst_transform=target_transform,
+                src_nodata=255,
+                dst_nodata=255,
                 resampling=Resampling.nearest,
             )
     with rasterio.open(out) as ds:
         arr = ds.read(1)
     uniq, counts = np.unique(arr, return_counts=True)
-    hist = dict(zip(uniq.tolist(), counts.tolist()))
+    hist = dict(zip(uniq.tolist(), counts.tolist(), strict=False))
     log.info("Aligned %s → %s  histogram=%s", label_src.name, out.name, hist)
 
     write_manifest(
-        out, event_id=event_id, pipeline_step="align_labels_to_composite",
-        inputs={"source": str(label_src.relative_to(REPO_ROOT)),
-                "reference": str(ref.relative_to(REPO_ROOT)),
-                "class_histogram": hist},
-        crs=str(target_crs), resampling="nearest",
+        out,
+        event_id=event_id,
+        pipeline_step="align_labels_to_composite",
+        inputs={
+            "source": str(label_src.relative_to(REPO_ROOT)),
+            "reference": str(ref.relative_to(REPO_ROOT)),
+            "class_histogram": hist,
+        },
+        crs=str(target_crs),
+        resampling="nearest",
         class_remap={"unburnt": 0, "low_mod": 1, "high": 2, "very_high": 3},
         notes="Labels already internal IDs (set by fetch_labels.py).",
     )

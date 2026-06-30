@@ -7,6 +7,7 @@ Writes:
 
 No live network or imagery needed — purely synthetic so CI is hermetic.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -29,8 +30,10 @@ def make_tile(seed: int, h: int = 64, w: int = 64) -> dict:
         r = np.sqrt((yy - h / 2) ** 2 + (xx - w / 2) ** 2)
         burn_high = r < h * 0.15
         burn_low = (r >= h * 0.15) & (r < h * 0.35)
-        post[3][burn_high] *= 0.15; post[5][burn_high] *= 1.8
-        post[3][burn_low] *= 0.6;   post[5][burn_low] *= 1.2
+        post[3][burn_high] *= 0.15
+        post[5][burn_high] *= 1.8
+        post[3][burn_low] *= 0.6
+        post[5][burn_low] *= 1.2
         label[burn_low] = 1
         label[burn_high] = 3
     mask = np.ones((h, w), dtype=np.uint8)
@@ -54,14 +57,17 @@ def main() -> None:
             tile = make_tile(seed)
             tp = d / f"tile_{i:05d}.npz"
             np.savez_compressed(tp, **tile)
-            rows.append({
-                "event_id": "synthetic_event",
-                "tile_path": str(tp.relative_to(REPO_ROOT)),
-                "split": split,
-                "y": 0, "x": 0,
-                "clear_frac": 1.0,
-                "label_valid_frac": 1.0,
-            })
+            rows.append(
+                {
+                    "event_id": "synthetic_event",
+                    "tile_path": str(tp.relative_to(REPO_ROOT)),
+                    "split": split,
+                    "y": 0,
+                    "x": 0,
+                    "clear_frac": 1.0,
+                    "label_valid_frac": 1.0,
+                }
+            )
 
     idx_path = REPO_ROOT / "data" / "processed" / "tile_index_synthetic_event.parquet"
     idx_path.parent.mkdir(parents=True, exist_ok=True)

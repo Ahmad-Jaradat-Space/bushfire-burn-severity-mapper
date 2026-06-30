@@ -13,6 +13,7 @@ Outputs (under data/interim/<event>/):
 Reflectance composites: per-pixel temporal median over the cloud-masked stack.
 Label resample: nearest-neighbour from EPSG:3577 native → working UTM at 10 m.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -57,8 +58,7 @@ def _build_composite(ds: xr.Dataset, bands: tuple[str, ...]) -> tuple[np.ndarray
     return composite, clear_any
 
 
-def _write_geotiff(path: Path, data: np.ndarray, transform, crs, dtype=None,
-                   nodata=None) -> None:
+def _write_geotiff(path: Path, data: np.ndarray, transform, crs, dtype=None, nodata=None) -> None:
     if data.ndim == 2:
         data = data[np.newaxis, ...]
     count, h, w = data.shape
@@ -71,7 +71,9 @@ def _write_geotiff(path: Path, data: np.ndarray, transform, crs, dtype=None,
         "crs": crs,
         "transform": transform,
         "compress": "deflate",
-        "predictor": 2 if (dtype or data.dtype) in (np.float32, np.float64, "float32", "float64") else 1,
+        "predictor": 2
+        if (dtype or data.dtype) in (np.float32, np.float64, "float32", "float64")
+        else 1,
         "tiled": True,
         "blockxsize": 256,
         "blockysize": 256,
@@ -83,9 +85,9 @@ def _write_geotiff(path: Path, data: np.ndarray, transform, crs, dtype=None,
         dst.write(data.astype(meta["dtype"]))
 
 
-def preprocess_event(event_id: str,
-                     raw_dir: Path | None = None,
-                     out_dir: Path | None = None) -> dict[str, Path]:
+def preprocess_event(
+    event_id: str, raw_dir: Path | None = None, out_dir: Path | None = None
+) -> dict[str, Path]:
     raw_dir = raw_dir or REPO_ROOT / "data" / "raw"
     out_dir = out_dir or REPO_ROOT / "data" / "interim" / event_id
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -107,10 +109,18 @@ def preprocess_event(event_id: str,
         crs = ref.rio.crs or working_crs
 
         out_stack = out_dir / f"{kind}_stack_10m.tif"
-        _write_geotiff(out_stack, composite.astype(np.float32), transform, crs, dtype=np.float32,
-                       nodata=float("nan"))
+        _write_geotiff(
+            out_stack,
+            composite.astype(np.float32),
+            transform,
+            crs,
+            dtype=np.float32,
+            nodata=float("nan"),
+        )
         out_mask = out_dir / f"mask_{kind}_10m.tif"
-        _write_geotiff(out_mask, clear_any.astype(np.uint8), transform, crs, dtype=np.uint8, nodata=0)
+        _write_geotiff(
+            out_mask, clear_any.astype(np.uint8), transform, crs, dtype=np.uint8, nodata=0
+        )
 
         write_manifest(
             out_stack,
@@ -130,8 +140,12 @@ def preprocess_event(event_id: str,
         )
         outputs[f"{kind}_stack"] = out_stack
         outputs[f"{kind}_mask"] = out_mask
-        log.info("[%s] composite -> %s  clear=%.1f%%", kind, out_stack.name,
-                 100 * clear_fraction(clear_any))
+        log.info(
+            "[%s] composite -> %s  clear=%.1f%%",
+            kind,
+            out_stack.name,
+            100 * clear_fraction(clear_any),
+        )
 
     # Label alignment: reproject GEEBAM to working UTM at 10 m using nearest
     label_native = raw_dir / "labels" / "aus_geebam" / event_id / "label_native_3577.tif"
@@ -157,8 +171,14 @@ def preprocess_event(event_id: str,
 
     remapped = remap_geebam(label_warped.values.astype(np.uint8))
     out_label = out_dir / "label_10m.tif"
-    _write_geotiff(out_label, remapped.astype(np.uint8), target_transform, target_crs,
-                   dtype=np.uint8, nodata=255)
+    _write_geotiff(
+        out_label,
+        remapped.astype(np.uint8),
+        target_transform,
+        target_crs,
+        dtype=np.uint8,
+        nodata=255,
+    )
     outputs["label"] = out_label
 
     write_manifest(

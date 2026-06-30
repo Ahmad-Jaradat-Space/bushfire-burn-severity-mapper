@@ -5,6 +5,7 @@ M12 final panel across all 4 AOIs. If a particular model's prediction is
 missing on disk, that cell is rendered as a "not yet trained" placeholder so
 the figure is always regenerable.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -21,11 +22,15 @@ from src.viz.maps import SEVERITY_COLORS, SEVERITY_NAMES, severity_cmap
 log = get_logger(__name__)
 
 MODELS = [
-    ("baseline_dnbr_multiclass", "outputs/predictions/baseline_dnbr/{event}/multiclass.tif", "dNBR baseline"),
-    ("rf",                       "outputs/predictions/rf_multiclass/{event}.tif",              "RandomForest"),
-    ("xgb",                      "outputs/predictions/xgb_multiclass/{event}.tif",             "XGBoost"),
-    ("unet",                     "outputs/predictions/unet_multiclass/{event}.tif",            "U-Net"),
-    ("segformer",                "outputs/predictions/segformer_multiclass/{event}.tif",       "SegFormer-B0"),
+    (
+        "baseline_dnbr_multiclass",
+        "outputs/predictions/baseline_dnbr/{event}/multiclass.tif",
+        "dNBR baseline",
+    ),
+    ("rf", "outputs/predictions/rf_multiclass/{event}.tif", "RandomForest"),
+    ("xgb", "outputs/predictions/xgb_multiclass/{event}.tif", "XGBoost"),
+    ("unet", "outputs/predictions/unet_multiclass/{event}.tif", "U-Net"),
+    ("segformer", "outputs/predictions/segformer_multiclass/{event}.tif", "SegFormer-B0"),
 ]
 
 
@@ -41,7 +46,7 @@ def _read_truecolor(stack_path: Path) -> np.ndarray | None:
         return None
     with rasterio.open(stack_path) as ds:
         a = ds.read().astype(np.float32)
-    return a[[2, 1, 0]]   # R=B04, G=B03, B=B02
+    return a[[2, 1, 0]]  # R=B04, G=B03, B=B02
 
 
 def _render_truecolor(ax, rgb: np.ndarray, title: str) -> None:
@@ -52,26 +57,37 @@ def _render_truecolor(ax, rgb: np.ndarray, title: str) -> None:
             out[c] = np.clip((rgb[c] - lo) / (hi - lo), 0, 1)
     ax.imshow(np.transpose(out, (1, 2, 0)))
     ax.set_title(title, fontsize=9)
-    ax.set_xticks([]); ax.set_yticks([])
+    ax.set_xticks([])
+    ax.set_yticks([])
 
 
 def _render_severity(ax, arr: np.ndarray, title: str) -> None:
-    ax.imshow(np.ma.masked_equal(arr, 255), cmap=severity_cmap(),
-              vmin=0, vmax=3, interpolation="nearest")
+    ax.imshow(
+        np.ma.masked_equal(arr, 255), cmap=severity_cmap(), vmin=0, vmax=3, interpolation="nearest"
+    )
     ax.set_title(title, fontsize=9)
-    ax.set_xticks([]); ax.set_yticks([])
+    ax.set_xticks([])
+    ax.set_yticks([])
 
 
 def _render_missing(ax, title: str) -> None:
-    ax.text(0.5, 0.5, "not available\n(run training)", ha="center", va="center",
-            fontsize=9, color="#888", transform=ax.transAxes)
+    ax.text(
+        0.5,
+        0.5,
+        "not available\n(run training)",
+        ha="center",
+        va="center",
+        fontsize=9,
+        color="#888",
+        transform=ax.transAxes,
+    )
     ax.set_title(title, fontsize=9)
-    ax.set_xticks([]); ax.set_yticks([])
+    ax.set_xticks([])
+    ax.set_yticks([])
     ax.set_facecolor("#fafafa")
 
 
-def comparison_panel_for_event(event_id: str, out_path: Path,
-                               caption: str = "") -> Path:
+def comparison_panel_for_event(event_id: str, out_path: Path, caption: str = "") -> Path:
     """One row per panel kind, 7 panels: pre TC | post TC | label | 5 models."""
     interim = REPO_ROOT / "data" / "interim" / event_id
     pre_rgb = _read_truecolor(interim / "pre_stack_10m.tif")
@@ -103,8 +119,15 @@ def comparison_panel_for_event(event_id: str, out_path: Path,
             _render_missing(ax, title)
 
     handles = [plt.Rectangle((0, 0), 1, 1, color=c) for c in SEVERITY_COLORS]
-    fig.legend(handles, SEVERITY_NAMES, loc="lower center", ncols=4, fontsize=10,
-               bbox_to_anchor=(0.5, -0.02), frameon=False)
+    fig.legend(
+        handles,
+        SEVERITY_NAMES,
+        loc="lower center",
+        ncols=4,
+        fontsize=10,
+        bbox_to_anchor=(0.5, -0.02),
+        frameon=False,
+    )
     fig.suptitle(f"{event_id} — five severity methods\n{caption}", fontsize=11)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.tight_layout(rect=(0, 0.02, 1, 0.95))
@@ -134,8 +157,12 @@ def all_events_overview(events: list[str], out_path: Path) -> Path:
         else:
             pred = None
             pred_title = "no prediction yet"
-        cells = [(pre, "rgb", "Pre"), (post, "rgb", "Post"),
-                 (label, "severity", "Label"), (pred, "severity", pred_title)]
+        cells = [
+            (pre, "rgb", "Pre"),
+            (post, "rgb", "Post"),
+            (label, "severity", "Label"),
+            (pred, "severity", pred_title),
+        ]
         for c, (arr, kind, t) in enumerate(cells):
             ax = axes[r, c]
             if arr is None:
@@ -159,13 +186,20 @@ def main() -> None:
     p.add_argument("--out", default=None)
     args = p.parse_args()
     if args.mode == "single":
-        out = Path(args.out or REPO_ROOT / "docs" / "figures" / f"{args.event}_comparison_panel.png")
+        out = Path(
+            args.out or REPO_ROOT / "docs" / "figures" / f"{args.event}_comparison_panel.png"
+        )
         comparison_panel_for_event(args.event, out, caption="Vertical-slice smoke test")
     else:
         out = Path(args.out or REPO_ROOT / "docs" / "figures" / "all_events_overview.png")
         all_events_overview(
-            ["kangaroo_island_2019_2020", "currowan_2019_2020",
-             "gospers_mountain_2019_2020", "east_gippsland_2019_2020"], out,
+            [
+                "kangaroo_island_2019_2020",
+                "currowan_2019_2020",
+                "gospers_mountain_2019_2020",
+                "east_gippsland_2019_2020",
+            ],
+            out,
         )
 
 

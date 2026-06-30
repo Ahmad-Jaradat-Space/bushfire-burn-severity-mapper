@@ -8,6 +8,7 @@ Verifies that:
 
 Does NOT require any downloaded Sentinel-2 imagery or GEEBAM labels.
 """
+
 import numpy as np
 
 from src.evaluation.metrics import summary
@@ -29,9 +30,9 @@ def _synth_aoi(h=128, w=128, seed=0):
     post[5][burn_high] *= 1.8
     post[3][burn_low] *= 0.6
     post[5][burn_low] *= 1.2
-    label = np.zeros((h, w), dtype=np.uint8)        # 0 = unburnt
-    label[burn_low] = 1                              # low_mod
-    label[burn_high] = 3                             # very_high
+    label = np.zeros((h, w), dtype=np.uint8)  # 0 = unburnt
+    label[burn_low] = 1  # low_mod
+    label[burn_high] = 3  # very_high
     return pre, post, label
 
 
@@ -50,7 +51,7 @@ def test_synthetic_rf_beats_random(tmp_path, monkeypatch):
     from sklearn.ensemble import RandomForestClassifier
 
     pre, post, label = _synth_aoi(h=96, w=96)
-    stack = build_stack(pre, post).reshape(18, -1).T   # [H*W, 18]
+    stack = build_stack(pre, post).reshape(18, -1).T  # [H*W, 18]
     y = label.ravel()
     rng = np.random.default_rng(0)
     n = stack.shape[0]

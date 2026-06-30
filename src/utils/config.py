@@ -7,10 +7,11 @@ parents into children (child wins), and returns an OmegaConf DictConfig.
 CLI dot-overrides ("data.tile_size=128", "experiment.split_mode=event_wise") are
 applied last via `OmegaConf.from_dotlist`.
 """
+
 from __future__ import annotations
 
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 from omegaconf import DictConfig, ListConfig, OmegaConf
 

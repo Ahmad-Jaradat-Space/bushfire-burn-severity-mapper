@@ -12,6 +12,7 @@ Outputs (under docs/demo/):
   kangaroo_slider.html     juxtapose.js before/after slider
   non_expert_panel.md      Plain-English explainer
 """
+
 from __future__ import annotations
 
 import argparse
@@ -45,28 +46,25 @@ def _synthetic_kangaroo(h=512, w=900, seed=0):
     yy, xx = np.mgrid[:h, :w]
     cy, cx = h // 2, w // 2
     rx, ry = w * 0.40, h * 0.32
-    land = ((xx - cx) ** 2) / (rx ** 2) + ((yy - cy) ** 2) / (ry ** 2) < 1.0
+    land = ((xx - cx) ** 2) / (rx**2) + ((yy - cy) ** 2) / (ry**2) < 1.0
     sea = ~land
 
     # Pre-fire RGB (greens / khakis on land, blue on water)
     pre = np.zeros((3, h, w), dtype=np.float32)
-    pre[0] = np.where(land, 0.18 + 0.08 * rng.random((h, w)),
-                            0.05 + 0.03 * rng.random((h, w)))   # R
-    pre[1] = np.where(land, 0.30 + 0.10 * rng.random((h, w)),
-                            0.12 + 0.04 * rng.random((h, w)))   # G
-    pre[2] = np.where(land, 0.14 + 0.05 * rng.random((h, w)),
-                            0.35 + 0.06 * rng.random((h, w)))   # B
+    pre[0] = np.where(land, 0.18 + 0.08 * rng.random((h, w)), 0.05 + 0.03 * rng.random((h, w)))  # R
+    pre[1] = np.where(land, 0.30 + 0.10 * rng.random((h, w)), 0.12 + 0.04 * rng.random((h, w)))  # G
+    pre[2] = np.where(land, 0.14 + 0.05 * rng.random((h, w)), 0.35 + 0.06 * rng.random((h, w)))  # B
 
     # Burn footprint: west two-thirds of the island
     burn_centre = (cy - 30, int(cx - rx * 0.4))
     rb_x = w * 0.20
     rb_y = h * 0.22
-    burn = land & (((xx - burn_centre[1]) ** 2) / (rb_x ** 2)
-                   + ((yy - burn_centre[0]) ** 2) / (rb_y ** 2) < 1.0)
+    burn = land & (
+        ((xx - burn_centre[1]) ** 2) / (rb_x**2) + ((yy - burn_centre[0]) ** 2) / (rb_y**2) < 1.0
+    )
 
     # Severity gradient: outer=low, middle=high, inner=very_high
-    radial = np.sqrt(((xx - burn_centre[1]) / rb_x) ** 2
-                     + ((yy - burn_centre[0]) / rb_y) ** 2)
+    radial = np.sqrt(((xx - burn_centre[1]) / rb_x) ** 2 + ((yy - burn_centre[0]) / rb_y) ** 2)
     severity = np.full((h, w), 255, dtype=np.uint8)
     severity[land] = 0
     severity[burn & (radial < 0.95)] = 1
@@ -92,7 +90,12 @@ def _kangaroo_real() -> tuple[np.ndarray, np.ndarray, np.ndarray] | None:
     interim = REPO_ROOT / "data" / "interim" / "kangaroo_island_2019_2020"
     pred_candidates = [
         REPO_ROOT / "outputs" / "predictions" / "rf_multiclass" / "kangaroo_island_2019_2020.tif",
-        REPO_ROOT / "outputs" / "predictions" / "baseline_dnbr" / "kangaroo_island_2019_2020" / "multiclass.tif",
+        REPO_ROOT
+        / "outputs"
+        / "predictions"
+        / "baseline_dnbr"
+        / "kangaroo_island_2019_2020"
+        / "multiclass.tif",
     ]
     pred_path = next((p for p in pred_candidates if p.exists()), None)
     if pred_path is None or not (interim / "pre_stack_10m.tif").exists():
@@ -109,14 +112,16 @@ def _kangaroo_real() -> tuple[np.ndarray, np.ndarray, np.ndarray] | None:
     return pre_rgb, post_rgb, sev
 
 
-def _animate_gif(pre_png: Path, post_png: Path, severity_png: Path, out: Path,
-                 duration_ms: int = 1800) -> Path:
+def _animate_gif(
+    pre_png: Path, post_png: Path, severity_png: Path, out: Path, duration_ms: int = 1800
+) -> Path:
     frames = [Image.open(p).convert("RGB") for p in (pre_png, post_png, severity_png)]
     # Resize to same width to avoid the GIF picking the widest frame's canvas
     target_w = min(f.width for f in frames)
     frames = [f.resize((target_w, int(f.height * target_w / f.width))) for f in frames]
-    frames[0].save(out, save_all=True, append_images=frames[1:], duration=duration_ms,
-                   loop=0, optimize=False)
+    frames[0].save(
+        out, save_all=True, append_images=frames[1:], duration=duration_ms, loop=0, optimize=False
+    )
     return out
 
 
@@ -209,8 +214,10 @@ def make_demo(force_synthetic: bool = False) -> dict[str, Path]:
     DEMO_DIR.mkdir(parents=True, exist_ok=True)
     real = None if force_synthetic else _kangaroo_real()
     if real is None:
-        log.warning("No real Kangaroo data found yet — rendering SYNTHETIC demo "
-                    "so the slider/animation infrastructure is reviewable.")
+        log.warning(
+            "No real Kangaroo data found yet — rendering SYNTHETIC demo "
+            "so the slider/animation infrastructure is reviewable."
+        )
         pre_rgb, post_rgb, severity = _synthetic_kangaroo()
     else:
         log.info("Using real Kangaroo Island composites + prediction.")
@@ -227,15 +234,25 @@ def make_demo(force_synthetic: bool = False) -> dict[str, Path]:
     _animate_gif(out_pre, out_post, out_sev, out_gif)
 
     out_html = DEMO_DIR / "kangaroo_slider.html"
-    out_html.write_text(SLIDER_HTML_TEMPLATE.format(
-        pre_src=out_pre.name, post_src=out_post.name, severity_src=out_sev.name,
-    ))
+    out_html.write_text(
+        SLIDER_HTML_TEMPLATE.format(
+            pre_src=out_pre.name,
+            post_src=out_post.name,
+            severity_src=out_sev.name,
+        )
+    )
 
     out_md = DEMO_DIR / "non_expert_panel.md"
     out_md.write_text(NON_EXPERT_MD)
 
-    paths = {"pre": out_pre, "post": out_post, "severity": out_sev,
-             "gif": out_gif, "html": out_html, "md": out_md}
+    paths = {
+        "pre": out_pre,
+        "post": out_post,
+        "severity": out_sev,
+        "gif": out_gif,
+        "html": out_html,
+        "md": out_md,
+    }
     for k, p in paths.items():
         log.info("  %s -> %s", k, p.relative_to(REPO_ROOT))
     return paths
@@ -243,8 +260,11 @@ def make_demo(force_synthetic: bool = False) -> dict[str, Path]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build M6.5 non-technical demo assets.")
-    parser.add_argument("--force-synthetic", action="store_true",
-                        help="Skip the check for real Kangaroo predictions.")
+    parser.add_argument(
+        "--force-synthetic",
+        action="store_true",
+        help="Skip the check for real Kangaroo predictions.",
+    )
     args = parser.parse_args()
     make_demo(force_synthetic=args.force_synthetic)
 

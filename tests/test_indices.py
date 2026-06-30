@@ -26,14 +26,13 @@ def test_nbr2_array():
 
 
 def test_bsi_array():
-    out = bsi(np.array([0.1]), np.array([0.2]),
-              np.array([0.3]), np.array([0.4]))
+    out = bsi(np.array([0.1]), np.array([0.2]), np.array([0.3]), np.array([0.4]))
     expected = ((0.4 + 0.2) - (0.3 + 0.1)) / ((0.4 + 0.2) + (0.3 + 0.1))
     np.testing.assert_allclose(out, [expected], atol=1e-6)
 
 
 def test_delta_sign():
     # Post-fire NBR drops → dNBR positive in burnt pixels
-    pre = nbr(0.4, 0.1)   # vegetated
+    pre = nbr(0.4, 0.1)  # vegetated
     post = nbr(0.2, 0.3)  # burnt
     assert delta(pre, post) > 0

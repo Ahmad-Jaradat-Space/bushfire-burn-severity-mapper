@@ -61,6 +61,21 @@ dev = [
     "jupyter>=1.0",
     "nbconvert>=7.16",
 ]
+stats = [
+    "statsmodels>=0.14",      # confounder GLM, mixed models
+]
+geo = [
+    "sqlalchemy>=2",          # PostGIS round-trip
+    "geoalchemy2>=0.15",
+    "psycopg2-binary>=2.9",
+]
+mlops = [
+    "mlflow>=2.12",           # experiment tracking
+    "psutil>=5.9",            # inference memory benchmark
+]
+fm = [
+    "terratorch>=0.99",       # Prithvi-EO geospatial foundation model
+]
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -72,7 +87,13 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
-ignore = ["E501"]
+# E501 line length is handled by the formatter; E701/E702 (paired plotting calls
+# on one line) and RUF001-003 (typographic en-dash / × in labels & docstrings)
+# are deliberate house style. E402 (imports after a sys.path/env shim in scripts),
+# B007 (unused loop counters), UP038 (isinstance tuples), SIM105 and RUF005 are
+# accepted stylistic choices across this codebase.
+ignore = ["E501", "E701", "E702", "RUF001", "RUF002", "RUF003",
+          "E402", "B007", "UP038", "SIM105", "RUF005"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -1,4 +1,5 @@
 """Structured stdout/file logging."""
+
 from __future__ import annotations
 
 import logging
@@ -6,8 +7,9 @@ import sys
 from pathlib import Path
 
 
-def get_logger(name: str = "bushfire", log_file: str | Path | None = None,
-               level: int = logging.INFO) -> logging.Logger:
+def get_logger(
+    name: str = "bushfire", log_file: str | Path | None = None, level: int = logging.INFO
+) -> logging.Logger:
     logger = logging.getLogger(name)
     if logger.handlers:
         return logger

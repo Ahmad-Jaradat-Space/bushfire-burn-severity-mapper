@@ -13,6 +13,7 @@ noise.
 
 After bitmap masking we dilate by `dilate_pixels` to absorb cloud-edge leakage.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -21,9 +22,11 @@ from scipy.ndimage import binary_dilation, generate_binary_structure
 DEFAULT_SCL_MASK_CLASSES: tuple[int, ...] = (0, 1, 3, 8, 9, 10, 11)
 
 
-def scl_to_clear_mask(scl: np.ndarray,
-                      mask_classes: tuple[int, ...] = DEFAULT_SCL_MASK_CLASSES,
-                      dilate_pixels: int = 2) -> np.ndarray:
+def scl_to_clear_mask(
+    scl: np.ndarray,
+    mask_classes: tuple[int, ...] = DEFAULT_SCL_MASK_CLASSES,
+    dilate_pixels: int = 2,
+) -> np.ndarray:
     """Return a bool array True where the pixel is a clear surface observation.
 
     `scl` is the L2A Scene Classification band (uint8).

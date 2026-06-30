@@ -1,0 +1,38 @@
+# Local stack: PostGIS (vector SQL) + MLflow (tracking UI) + the app image.
+#   docker compose -f docker/docker-compose.yml up --build
+services:
+  postgis:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: burn
+      POSTGRES_PASSWORD: burn
+      POSTGRES_DB: burn
+    ports: ["5432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U burn -d burn"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: burn-severity:latest
+    environment:
+      POSTGIS_DSN: postgresql://burn:burn@postgis:5432/burn
+      MLFLOW_TRACKING_URI: sqlite:////app/outputs/mlflow.db
+    volumes: ["..:/app"]
+    depends_on:
+      postgis:
+        condition: service_healthy
+    command: ["pytest", "-q"]
+
+  mlflow:
+    image: burn-severity:latest
+    command: ["mlflow", "server",
+              "--backend-store-uri", "sqlite:////app/outputs/mlflow.db",
+              "--host", "0.0.0.0", "--port", "5000"]
+    ports: ["5000:5000"]
+    volumes: ["..:/app"]
+    depends_on: ["app"]
