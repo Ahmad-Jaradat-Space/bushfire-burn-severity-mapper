@@ -3,20 +3,20 @@
 Three tools, all built on top of confusion matrices so they stay numerically
 identical to :func:`src.evaluation.metrics.summary`:
 
-* :func:`bootstrap_macro_metrics` — a **spatial block bootstrap** confidence
+* :func:`bootstrap_macro_metrics`, a **spatial block bootstrap** confidence
   interval on macro-IoU / macro-F1. Resamples the per-block confusion matrices
   from :mod:`src.evaluation.blocks` (not pixels), so the CI respects spatial
   autocorrelation instead of pretending every pixel is independent. Reports a
   bias-corrected-and-accelerated (BCa) interval, falling back to the percentile
   interval at the degenerate edges.
-* :func:`paired_bootstrap_delta` — a CI on the *difference* between two models'
+* :func:`paired_bootstrap_delta`, a CI on the *difference* between two models'
   macro metric, resampling the **same** blocks for both (a paired design).
-* :func:`mcnemar_test` — McNemar's paired test on per-pixel correctness, the
+* :func:`mcnemar_test`, McNemar's paired test on per-pixel correctness, the
   standard way to ask "is model A significantly more accurate than model B on
   the same scene?"
 
 These let the notebook state effect sizes with error bars and p-values rather
-than bare point estimates — the difference between "U-Net beats dNBR" and
+than bare point estimates, the difference between "U-Net beats dNBR" and
 "U-Net beats dNBR by 0.12 macro-IoU (95% CI 0.09-0.15, McNemar p < 1e-10)".
 """
 
@@ -101,7 +101,7 @@ def bootstrap_macro_metrics(
     keys, mats = _stack(block_cms)
     n_blocks = len(keys)
     if n_blocks == 0:
-        raise ValueError("block_cms is empty — nothing to bootstrap")
+        raise ValueError("block_cms is empty, nothing to bootstrap")
     total = mats.sum(axis=0)
     rng = np.random.default_rng(seed)
 

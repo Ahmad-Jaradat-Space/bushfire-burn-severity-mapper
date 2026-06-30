@@ -21,4 +21,4 @@ note: >
   Foundation-model comparison method. A frozen 304M ViT pretrained on global HLS
   imagery + a light upsampling decoder. Fed only the post-fire composite (no
   engineered pre/post/delta features) it still beats the from-scratch U-Net on
-  event-wise hold-out — see figure 16 and the notebook.
+  event-wise hold-out, see figure 16 and the notebook.

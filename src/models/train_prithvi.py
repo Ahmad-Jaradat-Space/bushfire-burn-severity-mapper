@@ -104,7 +104,7 @@ def train(
     if fast_mode:
         train_paths, val_paths, epochs = train_paths[:16], val_paths[:4], 2
     if not train_paths:
-        raise SystemExit("No event-wise train tiles found — run tiling first.")
+        raise SystemExit("No event-wise train tiles found, run tiling first.")
     mean, std = _norm_stats(train_paths)
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
     (MODEL_DIR / "normalization.json").write_text(

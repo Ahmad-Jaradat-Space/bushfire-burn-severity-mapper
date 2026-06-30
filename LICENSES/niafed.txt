@@ -1,4 +1,4 @@
-NIAFED — National Indicative Aggregated Fire Extent Dataset
+NIAFED, National Indicative Aggregated Fire Extent Dataset
 
 Source: Australian Government Department of Climate Change, Energy, the
 Environment and Water (DCCEEW). Aggregated from state agency fire footprints

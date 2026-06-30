@@ -6,7 +6,7 @@ SCL class codes (per ESA L2A doc):
   7=unclassified, 8=cloud-medium-prob, 9=cloud-high-prob,
   10=thin-cirrus, 11=snow
 
-We mask {0, 1, 3, 8, 9, 10, 11} by default — i.e. drop everything that isn't
+We mask {0, 1, 3, 8, 9, 10, 11} by default, i.e. drop everything that isn't
 a clear surface observation. SCL class 7 (unclassified) is kept by default;
 toggle via the `extra_mask_classes` argument if a particular AOI has unusual
 noise.

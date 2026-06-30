@@ -1,7 +1,7 @@
 """Phase-A reporting layer: turn event-wise predictions into figures with error
 bars and p-values.
 
-This is the importable library half — the notebook and
+This is the importable library half, the notebook and
 ``scripts/compute_uncertainty.py`` both call :func:`compute_report` and the
 ``fig_*`` renderers, so the story notebook regenerates the same artifacts it
 displays. The statistics live in :mod:`src.evaluation.uncertainty`,
@@ -75,15 +75,15 @@ def _load_predictions(event: str) -> tuple[np.ndarray, dict[str, np.ndarray]]:
     for model, tpl in PRED_TEMPLATES.items():
         path = REPO_ROOT / tpl.format(event=event)
         if not path.exists():
-            log.info("skip %s — no event-wise prediction at %s", model, path.relative_to(REPO_ROOT))
+            log.info("skip %s, no event-wise prediction at %s", model, path.relative_to(REPO_ROOT))
             continue
         arr = _read_band(path)
         if arr.shape != label.shape:
-            log.warning("skip %s — shape %s != label %s", model, arr.shape, label.shape)
+            log.warning("skip %s, shape %s != label %s", model, arr.shape, label.shape)
             continue
         preds[model] = arr
     if not preds:
-        raise SystemExit("No event-wise predictions found — run the pipeline first.")
+        raise SystemExit("No event-wise predictions found, run the pipeline first.")
     return label, preds
 
 
@@ -224,7 +224,7 @@ def fig_mcnemar(report: dict, out: Path) -> Path:
     for i in range(n):
         for j in range(n):
             if i == j:
-                ax.text(j, i, "—", ha="center", va="center", color="#888")
+                ax.text(j, i, ", ", ha="center", va="center", color="#888")
                 continue
             p = P[i, j]
             star = "***" if p < 1e-3 else "**" if p < 1e-2 else "*" if p < 0.05 else "ns"
@@ -267,7 +267,7 @@ def fig_area_adjusted(report: dict, out: Path, model: str = "unet") -> Path:
     ax.set_xticklabels(SEVERITY_NAMES)
     ax.set_ylabel("Area (hectares)")
     ax.set_title(
-        f"A defensible number: area-adjusted severity area — {report['models'][model]['label']}",
+        f"A defensible number: area-adjusted severity area, {report['models'][model]['label']}",
         loc="left",
     )
     handles = [
@@ -320,7 +320,7 @@ def fig_rareclass_pr(report: dict, out: Path) -> Path:
     return out
 
 
-# trainable parameters (millions) per learned method — frozen backbones excluded
+# trainable parameters (millions) per learned method, frozen backbones excluded
 TRAINABLE_PARAMS_M = {"unet": 24.4, "segformer": 3.7, "prithvi": 2.63}
 
 
@@ -335,7 +335,7 @@ def fig_foundation(report: dict, out: Path) -> Path:
         ax.text(
             0.02,
             d["point"] + 0.004,
-            f"ΔNBR baseline ({d['point']:.3f}) — 0 trainable params",
+            f"ΔNBR baseline ({d['point']:.3f}), 0 trainable params",
             color="#6b6552",
             fontsize=9,
             transform=ax.get_yaxis_transform(),
@@ -366,7 +366,7 @@ def fig_foundation(report: dict, out: Path) -> Path:
         )
     ax.set_xscale("log")
     ax.set_xlim(1.8, 40)
-    ax.set_xlabel("Trainable parameters (millions, log) — frozen backbone excluded")
+    ax.set_xlabel("Trainable parameters (millions, log), frozen backbone excluded")
     ax.set_ylabel("Event-wise macro IoU (95% CI)")
     ax.set_title("Foundation models: less to train, more that travels", loc="left")
     thin_axes(ax)

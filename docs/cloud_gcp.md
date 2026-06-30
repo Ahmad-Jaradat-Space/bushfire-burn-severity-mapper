@@ -32,7 +32,7 @@ map an 80 Mha state at 0.5 m on one worker. The platform pattern:
 ## Reproducibility & monitoring
 
 - Every raster already carries a provenance sidecar (git SHA, STAC IDs, CRS).
-- `src/utils/tracking.py` logs params/metrics/artifacts to MLflow — point
+- `src/utils/tracking.py` logs params/metrics/artifacts to MLflow, point
   `MLFLOW_TRACKING_URI` at the Cloud Run MLflow server.
 - The image is built and smoke-tested in CI; tag images by git SHA in Artifact
   Registry so every Vertex job is pinned to an exact commit.

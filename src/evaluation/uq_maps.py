@@ -6,9 +6,9 @@ inference and averaging ``T`` stochastic forward passes is Monte-Carlo dropout
 (Gal & Ghahramani 2016): a cheap Bayesian approximation that yields a posterior
 over the softmax. From it we read three maps:
 
-* **predictive entropy** of the mean prediction — total uncertainty,
-* **expected entropy** (mean of per-pass entropies) — aleatoric (data) noise,
-* **mutual information** = predictive − expected — epistemic (model) uncertainty,
+* **predictive entropy** of the mean prediction, total uncertainty,
+* **expected entropy** (mean of per-pass entropies), aleatoric (data) noise,
+* **mutual information** = predictive − expected, epistemic (model) uncertainty,
   i.e. *what the model does not know* and more data could fix.
 
 All passes are accumulated online, so memory stays at a couple of [C,H,W] cubes
@@ -24,7 +24,7 @@ import torch.nn as nn
 
 def enable_mc_dropout(model: nn.Module) -> int:
     """Put every dropout layer into train mode (leave the rest in eval). Returns
-    the number of dropout modules activated — 0 means MC-dropout is a no-op."""
+    the number of dropout modules activated, 0 means MC-dropout is a no-op."""
     n = 0
     for m in model.modules():
         if isinstance(m, (nn.Dropout, nn.Dropout1d, nn.Dropout2d, nn.Dropout3d)):

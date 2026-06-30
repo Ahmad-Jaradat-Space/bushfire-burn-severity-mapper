@@ -1,4 +1,4 @@
-"""Streamlined real-data fetch for a single AOI — memory-efficient version.
+"""Streamlined real-data fetch for a single AOI, memory-efficient version.
 
 Goes from STAC query to per-AOI pre/post composite GeoTIFFs without holding
 the full [T, C, H, W] stack in memory.
@@ -63,7 +63,7 @@ def composite_one_side(
     if not signed_items:
         raise ValueError("No items provided")
 
-    # Common odc.stac.load kwargs — including bbox to clip to AOI (otherwise
+    # Common odc.stac.load kwargs, including bbox to clip to AOI (otherwise
     # the loaded grid covers the full extent of every intersecting S2 tile,
     # which is ~10x more pixels than we need).
     load_kwargs = dict(

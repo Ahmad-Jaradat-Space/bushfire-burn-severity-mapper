@@ -2,14 +2,14 @@
 
 Pixels in a burn-severity raster are strongly spatially autocorrelated:
 neighbouring pixels almost always share a class. Treating each pixel as an
-independent draw — the naive bootstrap — therefore badly *underestimates* the
+independent draw, the naive bootstrap, therefore badly *underestimates* the
 sampling uncertainty of any map-accuracy metric. We instead resample contiguous
 square blocks of pixels: correlation is preserved *inside* a block, and we only
 assume independence *between* blocks (a spatial block bootstrap).
 
 A block is a ``block_px x block_px`` square in raster (row, col) space. The
 per-block confusion matrices returned here are the unit of resampling for
-:mod:`src.evaluation.uncertainty` — summing all of them reproduces the global
+:mod:`src.evaluation.uncertainty`, summing all of them reproduces the global
 confusion matrix exactly, so every estimator stays consistent with
 :func:`src.evaluation.metrics.summary`.
 """

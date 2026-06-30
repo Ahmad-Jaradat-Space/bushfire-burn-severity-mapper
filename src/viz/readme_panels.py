@@ -128,7 +128,7 @@ def comparison_panel_for_event(event_id: str, out_path: Path, caption: str = "")
         bbox_to_anchor=(0.5, -0.02),
         frameon=False,
     )
-    fig.suptitle(f"{event_id} — five severity methods\n{caption}", fontsize=11)
+    fig.suptitle(f"{event_id}, five severity methods\n{caption}", fontsize=11)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.tight_layout(rect=(0, 0.02, 1, 0.95))
     fig.savefig(out_path, dpi=140, bbox_inches="tight")

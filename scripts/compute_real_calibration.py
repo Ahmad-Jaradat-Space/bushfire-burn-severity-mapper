@@ -99,7 +99,7 @@ def main():
         out = out_dir / f"{model_name}.json"
         out.write_text(json.dumps(data, indent=2))
         log.info(
-            "Wrote %s — ECE=%.3f Brier=%.3f n=%d",
+            "Wrote %s, ECE=%.3f Brier=%.3f n=%d",
             out.relative_to(REPO_ROOT),
             data["ece"],
             data["brier"],

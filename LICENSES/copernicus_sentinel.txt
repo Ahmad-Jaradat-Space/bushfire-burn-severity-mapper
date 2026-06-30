@@ -1,4 +1,4 @@
-Copernicus Sentinel-2 Data — Terms of Use
+Copernicus Sentinel-2 Data, Terms of Use
 
 The Copernicus Sentinel-2 mission is part of the European Union's Earth observation
 programme, Copernicus. Sentinel-2 data are made available under the European Union's

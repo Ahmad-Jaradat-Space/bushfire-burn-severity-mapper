@@ -11,7 +11,7 @@ from src.evaluation.conformal import (
 
 def _calibrated_data(n, c=4, seed=0):
     """Draw probs from a Dirichlet and labels FROM those probs, so the softmax
-    is perfectly calibrated — conformal coverage must then hold."""
+    is perfectly calibrated, conformal coverage must then hold."""
     rng = np.random.default_rng(seed)
     probs = rng.dirichlet(np.ones(c) * 0.6, size=n)
     labels = np.array([rng.choice(c, p=probs[i]) for i in range(n)])

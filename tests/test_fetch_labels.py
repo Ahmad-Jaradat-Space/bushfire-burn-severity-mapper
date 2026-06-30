@@ -1,6 +1,6 @@
 """Unit tests for fetch_labels (current MapServer/export + legend-decode API).
 
-We don't hit the live GEEBAM endpoint here — those are integration tests. These
+We don't hit the live GEEBAM endpoint here, those are integration tests. These
 verify the pure-Python plumbing: WGS84 request-tile planning, the exact
 RGBA→class legend reverse-map, and the dry-run path that writes a manifest with
 no network.

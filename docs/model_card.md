@@ -1,14 +1,14 @@
-# Model Card — Australian Bushfire Burn Severity Mapper
+# Model Card: Australian Bushfire Burn Severity Mapper
 
 ## Model details
 
 - **Project**: Retrospective burn-severity mapping over four 2019–2020 Australian "Black Summer" fire events.
 - **Versions evaluated**:
-  - `baseline_dnbr` — threshold on Differenced Normalised Burn Ratio (binary at three thresholds + USGS-style multiclass)
-  - `rf` — `sklearn.ensemble.RandomForestClassifier`, 500 trees, max_depth 30, on 18-channel per-pixel features
-  - `xgb` — `xgboost.XGBClassifier`, `multi:softprob`, 800 trees, max_depth 8, on the same 18 features
-  - `unet` — `segmentation_models_pytorch.Unet` with ResNet-34 encoder, 18 input channels, 4 output classes, trained from scratch
-  - `segformer` — HuggingFace SegFormer-B0 (`nvidia/mit-b0`) with the first patch-embedding Conv2d **inflated from 3→18 channels** (averaged RGB kernel scaled by 3/18 to preserve output magnitude)
+  - `baseline_dnbr`, threshold on Differenced Normalised Burn Ratio (binary at three thresholds + USGS-style multiclass)
+  - `rf`, `sklearn.ensemble.RandomForestClassifier`, 500 trees, max_depth 30, on 18-channel per-pixel features
+  - `xgb`, `xgboost.XGBClassifier`, `multi:softprob`, 800 trees, max_depth 8, on the same 18 features
+  - `unet`, `segmentation_models_pytorch.Unet` with ResNet-34 encoder, 18 input channels, 4 output classes, trained from scratch
+  - `segformer`, HuggingFace SegFormer-B0 (`nvidia/mit-b0`) with the first patch-embedding Conv2d **inflated from 3→18 channels** (averaged RGB kernel scaled by 3/18 to preserve output magnitude)
 - **Task**: 4-class semantic segmentation `{unburnt, low_moderate, high, very_high}` at 10 m on Sentinel-2 imagery.
 - **Hardware**: Mac Mini M4 Pro, 64 GB unified memory, Apple Silicon MPS only (no CUDA). `bfloat16` autocast on MPS; fp32 cast for loss + grad-norm clipped at 1.0.
 - **Date**: 2026-05-27.
@@ -62,7 +62,7 @@ All metric tables and figures are regenerated from saved prediction GeoTIFFs by 
 ## Limitations
 
 1. **AUS GEEBAM is a proxy, not ground truth.** The classes are derived from satellite indices without field calibration. Low and moderate severity are collapsed by the upstream dataset. AUS GEEBAM's own published comparisons against state products report only 48–82% overall agreement at four classes (72–92% at two classes), so any model claiming to "match GEEBAM perfectly" would actually be overfitting GEEBAM's specific algorithmic choices.
-2. **Label resolution mismatch.** GEEBAM is published at 40 m; predictions are made at 10 m. Each 10 m prediction pixel is effectively supervised by a 40 m label cell — a 16× scale gap that flows through every metric. Per-class IoU is the right metric to read here; pixel accuracy is misleading.
+2. **Label resolution mismatch.** GEEBAM is published at 40 m; predictions are made at 10 m. Each 10 m prediction pixel is effectively supervised by a 40 m label cell, a 16× scale gap that flows through every metric. Per-class IoU is the right metric to read here; pixel accuracy is misleading.
 3. **Severity is ecosystem-dependent.** GEEBAM itself moved from plain dNBR to vegetation-stratified RNBR specifically because dNBR underperforms in some Australian biomes. Any plain dNBR-only baseline will underperform especially in low-biomass and heterogeneous fire-edge contexts.
 4. **Cloud / smoke gaps.** Pixels with no clear observation in either pre or post window are written as `ignore_id=255` and excluded from metrics. They are not silently filled.
 5. **Topographic shadow can masquerade as burn.** Steep south-facing slopes can look dark in post-fire imagery even when unburnt. The slope-stratified metric is the diagnostic for this.
@@ -71,7 +71,7 @@ All metric tables and figures are regenerated from saved prediction GeoTIFFs by 
 ## Uncertainty, evaluation rigor, and foundation models
 
 The benchmark is reported with the statistical and uncertainty machinery needed
-to make its figures trustworthy — and to keep them honest about what they don't
+to make its figures trustworthy, and to keep them honest about what they don't
 know:
 
 - **Significance, not just point estimates.** Macro-IoU differences carry
@@ -82,7 +82,7 @@ know:
   would have over-claimed every difference.
 - **Calibrated uncertainty.** Per-pixel MC-dropout entropy (epistemic vs
   aleatoric) and split-conformal prediction sets (`src/evaluation/{uq_maps,conformal}.py`)
-  give coverage guarantees; under transfer the 90% sets are near-maximal — the
+  give coverage guarantees; under transfer the 90% sets are near-maximal, the
   model honestly reports that it is unsure.
 - **Design-based accuracy.** Olofsson area-adjusted estimates with CIs
   (`src/evaluation/area_estimation.py`) correct the biased pixel-count areas. Note:
@@ -90,7 +90,7 @@ know:
   (`src/data/spatial_sampling.py`) is required for an operational interval.
 - **Confounder control.** A cluster-robust logistic GLM (`src/stats/confounders.py`)
   shows that, controlling for severity class and burn-signal magnitude, **slope is
-  not a significant driver of error** — the terrain-shadow worry is a confound,
+  not a significant driver of error**, the terrain-shadow worry is a confound,
   not a cause, on this scene.
 - **Foundation-model caveat.** The Prithvi result is a single-frame, frozen-backbone
   linear probe; a temporal input and an unfrozen fine-tune would likely improve it,

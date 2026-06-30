@@ -1,4 +1,4 @@
-# CI smoke config — runs a 2-epoch U-Net on synthetic fixture tiles.
+# CI smoke config, runs a 2-epoch U-Net on synthetic fixture tiles.
 extends: ../config.yaml
 
 experiment:

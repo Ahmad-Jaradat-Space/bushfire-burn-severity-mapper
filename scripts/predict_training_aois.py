@@ -4,7 +4,7 @@ GeoTIFFs alongside the existing Kangaroo Island outputs.
 
 The training events already have pre/post composites + aligned GEEBAM labels
 under data/interim/<event>/. We have not yet rendered the trained models'
-predictions on them — only the validation event (Kangaroo Island) was
+predictions on them, only the validation event (Kangaroo Island) was
 materialised during training. This script closes that gap so the notebook can
 show predictions across three AOIs instead of one.
 

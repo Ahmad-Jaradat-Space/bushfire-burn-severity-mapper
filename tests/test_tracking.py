@@ -20,7 +20,7 @@ def test_start_run_yields_context():
 
     pytest.importorskip("mlflow")
     with tracking.start_run(run_name="unit-test", experiment="unit") as run:
-        # either a real run (mlflow present) or None (degraded) — both fine
+        # either a real run (mlflow present) or None (degraded), both fine
         tracking.log_params({"k": "v"})
         tracking.log_metrics({"m": 1.0}, step=0)
     assert run is None or hasattr(run, "info")

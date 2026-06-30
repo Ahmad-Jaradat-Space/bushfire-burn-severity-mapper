@@ -26,7 +26,7 @@ import numpy as np
 def s2_truecolour(stack: np.ndarray, gamma: float = 0.85, scale: float = 3.5) -> np.ndarray:
     """Render a 6-band reflectance stack [C, H, W] as a true-colour [H, W, 3] image.
 
-    Uses a JOINT linear stretch — the same multiplier on every channel — so
+    Uses a JOINT linear stretch, the same multiplier on every channel, so
     colour relationships (green > red in vegetation, etc.) are preserved.
     This is the standard Sentinel-2 visualisation: multiply RGB reflectance
     by ~3, apply a mild gamma to lift midtones, clip to [0, 1].
@@ -172,7 +172,7 @@ def build(h: int = 512, w: int = 900, seed: int = 7) -> SyntheticScene:
 
     # Inside burn: NIR collapses with severity, SWIR2 rises, all visible
     # bands shift toward dark charcoal-brown (ash/char). Real post-fire
-    # imagery does NOT look bright red — it looks dark brown.
+    # imagery does NOT look bright red, it looks dark brown.
     nir_factor = np.where(burn, 1.0 - 0.78 * sev, 1.0)
     post[3] = pre[3] * nir_factor
     # Red rises only slightly (ash is dark, not bright)
@@ -181,7 +181,7 @@ def build(h: int = 512, w: int = 900, seed: int = 7) -> SyntheticScene:
     post[1] = pre[1] * np.where(burn, 1.0 - 0.70 * sev, 1.0)
     # Blue drops too (lower overall albedo)
     post[0] = pre[0] * np.where(burn, 1.0 - 0.30 * sev, 1.0)
-    # SWIR bands rise — this is the burn-mapping signal that NBR exploits
+    # SWIR bands rise, this is the burn-mapping signal that NBR exploits
     post[4] = pre[4] + np.where(burn, 0.16 * sev, 0)
     post[5] = pre[5] + np.where(burn, 0.28 * sev * (1.0 - pre[5]), 0)
 

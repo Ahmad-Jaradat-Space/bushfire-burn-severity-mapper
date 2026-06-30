@@ -187,7 +187,7 @@ def fig_entropy(report: dict, out: Path) -> Path:
     fig.text(
         0.01,
         0.905,
-        "Epistemic uncertainty (right) is the part more or better-matched training data could reduce — "
+        "Epistemic uncertainty (right) is the part more or better-matched training data could reduce, "
         "it concentrates on burn edges and the unfamiliar heath.",
         ha="left",
         va="top",
@@ -253,7 +253,7 @@ def fig_conformal(report: dict, out: Path) -> Path:
     thin_axes(axc)
 
     fig.suptitle(
-        "Conformal severity sets — coverage you can trust, at a visible price",
+        "Conformal severity sets, coverage you can trust, at a visible price",
         x=0.01,
         y=0.98,
         ha="left",

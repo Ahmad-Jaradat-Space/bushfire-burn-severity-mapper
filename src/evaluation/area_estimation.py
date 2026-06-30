@@ -1,7 +1,7 @@
 """Design-based, area-adjusted accuracy and area estimates (Olofsson et al.).
 
 A wall-to-wall map's per-pixel accuracy is a *biased* estimator of the true
-class areas whenever the map mislabels — over-mapped classes inflate, and the
+class areas whenever the map mislabels, over-mapped classes inflate, and the
 sampling variance is invisible. Olofsson et al. 2014 ("Good practices for
 estimating area and assessing accuracy of land change", *RSE* 148:42-57) give
 the design-based correction: weight the confusion matrix by each map class's
@@ -9,7 +9,7 @@ mapped area, then report user's / producer's / overall accuracy and unbiased
 class areas, each with a standard error and 95% confidence interval.
 
 This is the estimator an ecology consultancy needs before quoting "X hectares
-burnt at high severity" — it turns a map into a *figure with error bars*.
+burnt at high severity", it turns a map into a *figure with error bars*.
 
 The confusion matrix convention matches :func:`src.evaluation.metrics.summary`:
 ``cm[i, j]`` counts reference (truth) class ``i`` predicted (mapped) as ``j``.

@@ -57,7 +57,7 @@ def evaluate(events: list[str] | None = None) -> dict:
             pred_path = REPO_ROOT / tpl.format(event=ev)
             if not pred_path.exists():
                 log.info(
-                    "Skipping %s/%s — no prediction yet at %s",
+                    "Skipping %s/%s, no prediction yet at %s",
                     model,
                     ev,
                     pred_path.relative_to(REPO_ROOT),
@@ -66,7 +66,7 @@ def evaluate(events: list[str] | None = None) -> dict:
             label_path = REPO_ROOT / "data" / "interim" / ev / "label_10m.tif"
             if not label_path.exists():
                 log.info(
-                    "Skipping %s/%s — no label at %s", model, ev, label_path.relative_to(REPO_ROOT)
+                    "Skipping %s/%s, no label at %s", model, ev, label_path.relative_to(REPO_ROOT)
                 )
                 continue
             pred = _read_band(pred_path)

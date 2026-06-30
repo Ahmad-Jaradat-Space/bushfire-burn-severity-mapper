@@ -1,13 +1,13 @@
-"""Confounder-controlled error analysis — "where does the model err, all else equal?"
+"""Confounder-controlled error analysis, "where does the model err, all else equal?"
 
 A raw error map conflates everything: maybe the model looks worst on steep
 ground only because steep ground is also where the rare severe class lives. The
 econometric answer is a regression that holds the other factors fixed. We fit a
-logistic GLM of per-pixel error on the candidate confounders —
+logistic GLM of per-pixel error on the candidate confounders,
 
     error ~ pre-fire NDVI + slope + dNBR + C(true severity class)
 
-— and read each odds ratio *controlling for the rest*. Crucially the standard
+, and read each odds ratio *controlling for the rest*. Crucially the standard
 errors are **cluster-robust by spatial block**: 9 million pixels are not 9
 million independent observations, and naive SEs would make every coefficient
 spuriously significant (the same pseudo-replication trap the spatial-block

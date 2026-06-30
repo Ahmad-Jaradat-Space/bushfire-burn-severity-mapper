@@ -7,7 +7,7 @@ from src.models.baselines import dnbr, dnbr_binary, dnbr_multiclass_usgs
 def _synth_pre_post(h=32, w=32, burn_ratio=0.5, seed=0):
     rng = np.random.default_rng(seed)
     pre = rng.uniform(0.05, 0.6, size=(6, h, w)).astype(np.float32)
-    # Index order: B02 B03 B04 B08 B11 B12 — NIR is idx 3, SWIR2 is idx 5
+    # Index order: B02 B03 B04 B08 B11 B12, NIR is idx 3, SWIR2 is idx 5
     post = pre.copy()
     burn = np.zeros((h, w), dtype=bool)
     burn[:, : int(w * burn_ratio)] = True

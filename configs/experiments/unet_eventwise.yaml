@@ -2,7 +2,7 @@ extends: ../config.yaml
 
 # Honest event-wise hold-out: train on the two NSW fires, validate on Kangaroo
 # Island, test on East Gippsland. This is the protocol the notebook argues is the
-# only trustworthy one — and the checkpoint it produces is what Phase B's
+# only trustworthy one, and the checkpoint it produces is what Phase B's
 # uncertainty / conformal analysis runs on.
 experiment:
   name: unet_eventwise

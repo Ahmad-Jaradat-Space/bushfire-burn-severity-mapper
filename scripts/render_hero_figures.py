@@ -75,10 +75,10 @@ def fig02_prepost_truecolour():
         for s in ax.spines.values():
             s.set_visible(False)
     titles = [
-        ("Pre-fire — true colour", pre_tc),
-        ("Post-fire — true colour", post_tc),
-        ("Pre-fire — SWIR / NIR false colour", pre_fc),
-        ("Post-fire — SWIR / NIR false colour", post_fc),
+        ("Pre-fire, true colour", pre_tc),
+        ("Post-fire, true colour", post_tc),
+        ("Pre-fire, SWIR / NIR false colour", pre_fc),
+        ("Post-fire, SWIR / NIR false colour", post_fc),
     ]
     for ax, (title, img) in zip(axes.ravel(), titles, strict=False):
         ax.imshow(img)
@@ -89,7 +89,7 @@ def fig02_prepost_truecolour():
         else "Synthetic stand-in"
     )
     fig.suptitle(
-        f"Kangaroo Island, October 2019 → January 2020 — {src}",
+        f"Kangaroo Island, October 2019 → January 2020, {src}",
         fontsize=15,
         x=0.02,
         ha="left",
@@ -119,7 +119,7 @@ def fig03_dnbr_panel():
     im1 = axes[0, 1].imshow(nbr_post, cmap="RdYlGn", vmin=-0.5, vmax=0.9)
     axes[0, 1].set_title("NBR after the fire", loc="left", fontsize=12, pad=8)
     im2 = axes[1, 0].imshow(d, cmap=dnbr_cmap(), vmin=-0.2, vmax=1.0)
-    axes[1, 0].set_title("ΔNBR — change in NBR", loc="left", fontsize=12, pad=8)
+    axes[1, 0].set_title("ΔNBR, change in NBR", loc="left", fontsize=12, pad=8)
     axes[1, 1].imshow(
         np.ma.masked_equal(thresh, 255),
         cmap=severity_cmap(),
@@ -218,7 +218,7 @@ def fig04_five_methods():
         handletextpad=0.5,
     )
     fig.suptitle(
-        "Five methods, one fire — agreement with the GEEBAM proxy",
+        "Five methods, one fire, agreement with the GEEBAM proxy",
         fontsize=15,
         x=0.02,
         ha="left",

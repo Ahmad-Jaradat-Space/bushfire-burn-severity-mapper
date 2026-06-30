@@ -11,7 +11,7 @@ AOI_DIR = REPO_ROOT / "configs" / "aois"
 
 # Sentinel-2 native grid is aligned to 10 m within each UTM zone, with tile origins
 # at multiples of 60 m offsets from the UTM datum. For our work we snap to a 10 m grid
-# inside each AOI's UTM zone — this is sufficient for label alignment within ±5 m.
+# inside each AOI's UTM zone, this is sufficient for label alignment within ±5 m.
 S2_GRID_M = 10
 
 

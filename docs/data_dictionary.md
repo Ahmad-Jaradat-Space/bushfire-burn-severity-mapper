@@ -1,4 +1,4 @@
-# Data Dictionary — Sources, Licences, Attribution
+# Data Dictionary: Sources, Licences, Attribution
 
 Every external dataset used by this repo is listed here with its provenance, licence, and how it is accessed. **No sample data is committed to the repo until the corresponding upstream notice is in `LICENSES/`.**
 
@@ -7,7 +7,7 @@ Every external dataset used by this repo is listed here with its provenance, lic
 ### Sentinel-2 Level-2A surface reflectance
 - **Provider**: ESA Copernicus, served via Microsoft Planetary Computer
 - **Endpoint**: `https://planetarycomputer.microsoft.com/api/stac/v1` (collection `sentinel-2-l2a`)
-- **Licence**: Copernicus Sentinel data — free, full, open; **CC-BY-SA 3.0 IGO** attribution required
+- **Licence**: Copernicus Sentinel data, free, full, open; **CC-BY-SA 3.0 IGO** attribution required
 - **Attribution string**: *"Contains modified Copernicus Sentinel data [2018–2020] processed by ESA."*
 - **Access**: STAC search (unauthenticated) + asset signing via `planetary_computer.sign()` (short-lived SAS, ~1 h TTL)
 - **Bands used**: B02, B03, B04, B08, B11, B12 (10 m / 20 m), plus SCL for masking
@@ -57,8 +57,8 @@ Every external dataset used by this repo is listed here with its provenance, lic
 - **Use**: optional land-use stratification
 
 ## Datasets explicitly NOT used
-- **DEA Hotspots** — useful for visual context only. Active thermal anomaly points are not severity labels and the product is explicitly "not for safety-of-life decisions". Never used as training data.
-- **Queensland Sentinel-2 fire scars** — relevant for binary burnt-area pretraining as a future v2 extension; not in scope for v1.
+- **DEA Hotspots**, useful for visual context only. Active thermal anomaly points are not severity labels and the product is explicitly "not for safety-of-life decisions". Never used as training data.
+- **Queensland Sentinel-2 fire scars**, relevant for binary burnt-area pretraining as a future v2 extension; not in scope for v1.
 
 ## Sample data policy
 

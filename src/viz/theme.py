@@ -41,7 +41,7 @@ MODEL_COLOURS = {
     "xgb": "#5E8B7E",
     "unet": "#B8553A",
     "segformer": "#7F1F1F",
-    "prithvi": "#5A4B8C",  # foundation model — violet
+    "prithvi": "#5A4B8C",  # foundation model, violet
 }
 
 

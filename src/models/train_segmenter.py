@@ -185,7 +185,7 @@ def train(config_path: str, fast_mode: bool = False, overrides: list[str] | None
     log.info("Device: %s (fallback_enabled=%s)", device_info.name, device_info.fallback_enabled)
     if device_info.name == "mps" and not device_info.fallback_enabled:
         log.warning(
-            "PYTORCH_ENABLE_MPS_FALLBACK is not set — some ops may error on MPS. "
+            "PYTORCH_ENABLE_MPS_FALLBACK is not set, some ops may error on MPS. "
             "Source scripts/setup_env.sh before running."
         )
 
@@ -338,7 +338,7 @@ def train(config_path: str, fast_mode: bool = False, overrides: list[str] | None
         for ev in events:
             interim = REPO_ROOT / "data" / "interim" / ev
             if not (interim / "pre_stack_10m.tif").exists():
-                log.warning("Skipping inference for %s — interim composites missing.", ev)
+                log.warning("Skipping inference for %s, interim composites missing.", ev)
                 continue
             with rasterio.open(interim / "pre_stack_10m.tif") as ds:
                 pre = ds.read().astype(np.float32)
@@ -416,7 +416,7 @@ def main() -> None:
     if "PYTORCH_ENABLE_MPS_FALLBACK" not in os.environ:
         os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
         log.warning(
-            "Set PYTORCH_ENABLE_MPS_FALLBACK=1 in-process — "
+            "Set PYTORCH_ENABLE_MPS_FALLBACK=1 in-process, "
             "for production runs, source scripts/setup_env.sh BEFORE python starts."
         )
     train(args.config, fast_mode=args.fast_mode, overrides=args.overrides)

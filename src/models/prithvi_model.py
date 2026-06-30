@@ -1,15 +1,15 @@
 """Prithvi-EO-2.0-300M as a burn-severity segmenter (frozen backbone + decoder).
 
 Prithvi-EO-2.0 (NASA/IBM) is a geospatial foundation model pre-trained on
-global HLS imagery. Its expected six bands — Blue, Green, Red, NIR, SWIR-1,
-SWIR-2 — are exactly the bands in our Sentinel-2 composite, so no reordering is
+global HLS imagery. Its expected six bands, Blue, Green, Red, NIR, SWIR-1,
+SWIR-2, are exactly the bands in our Sentinel-2 composite, so no reordering is
 needed. We load the 300M ViT via terratorch, **freeze it**, and train only a
 light upsampling decoder on top: a fair, MPS-feasible "linear-probe-style"
 comparison against the from-scratch U-Net, not a full fine-tune.
 
 The ViT returns one token sequence ``[B, 1+gh*gw, 1024]`` per layer; we take the
 last layer, drop the CLS token, fold the patch tokens back into a ``14x14``
-feature map and decode it up to a per-pixel severity logit map — matching the
+feature map and decode it up to a per-pixel severity logit map, matching the
 ``forward(x) -> [B, num_classes, H, W]`` contract of the other model wrappers.
 """
 

@@ -1,4 +1,4 @@
-"""Phase A CLI — statistical rigor on the event-wise hold-out (Kangaroo Island).
+"""Phase A CLI, statistical rigor on the event-wise hold-out (Kangaroo Island).
 
 Thin driver over :mod:`src.evaluation.uncertainty_report`. Computes spatial-block
 bootstrap CIs, McNemar significance, paired bootstrap deltas, Olofsson

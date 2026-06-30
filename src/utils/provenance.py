@@ -47,7 +47,7 @@ def write_manifest(
     output_path : path to the raster being described (existence not required at call time)
     event_id : stable event identifier
     pipeline_step : e.g. "fetch_sentinel", "preprocess", "train_rf"
-    inputs : dict of input descriptors — e.g. {"stac_items": [...], "source_url": "..."}
+    inputs : dict of input descriptors, e.g. {"stac_items": [...], "source_url": "..."}
     crs : EPSG string e.g. "EPSG:32754"
     resampling : "bilinear" | "nearest" | None
     class_remap : mapping (only relevant for label rasters)

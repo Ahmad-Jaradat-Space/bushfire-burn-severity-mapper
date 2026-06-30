@@ -1,4 +1,4 @@
-"""Phase E CLI — scale benchmark + MLflow backfill, render figures 14/15.
+"""Phase E CLI, scale benchmark + MLflow backfill, render figures 14/15.
 
 python scripts/benchmark_inference.py            # mps + cpu throughput, cost projection
 """

@@ -138,7 +138,7 @@ def _plot_landcover_heatmap(report: dict, model: str, event_id: str, out_path: P
     for i in range(M.shape[0]):
         for j in range(M.shape[1]):
             if np.isnan(M[i, j]):
-                ax.text(j, i, "—", ha="center", va="center", color="#aaa")
+                ax.text(j, i, ", ", ha="center", va="center", color="#aaa")
             else:
                 ax.text(
                     j,
@@ -149,7 +149,7 @@ def _plot_landcover_heatmap(report: dict, model: str, event_id: str, out_path: P
                     color="white" if M[i, j] < 0.5 else "black",
                     fontsize=9,
                 )
-    ax.set_title(f"{model} on {event_id} — per-landcover metrics")
+    ax.set_title(f"{model} on {event_id}, per-landcover metrics")
     fig.colorbar(im, ax=ax, shrink=0.7)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.tight_layout()

@@ -18,5 +18,5 @@ monitoring, weed mapping, biodiversity assessment) runs on. The mapping:
 | **Reproducibility & engineering standards**: provenance sidecars, seeded runs, CI, 80+ tests, model card | `src/utils/provenance.py`, `.github/`, `tests/`, `docs/model_card.md` | maintainable production + R&D codebase |
 
 The through-line is the same one the role asks for: turn imagery into
-**decision-grade figures** — with confidence intervals, calibrated uncertainty,
-and a vector roll-up a non-modeller can act on — and do it reproducibly at scale.
+**decision-grade figures**, with confidence intervals, calibrated uncertainty,
+and a vector roll-up a non-modeller can act on, and do it reproducibly at scale.

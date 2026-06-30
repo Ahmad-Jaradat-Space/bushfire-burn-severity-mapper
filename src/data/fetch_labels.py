@@ -5,7 +5,7 @@ expose `exportImage` with raw pixel access. We instead call MapServer-level
 `/export` to get the rendered RGBA PNG, then **reverse-map the official
 symbology RGB tuples back to class IDs** using the legend we retrieved
 programmatically. This is exact (not lossy) because the renderer uses a
-unique-value (nearest-neighbour) ramp with one colour per class — there is no
+unique-value (nearest-neighbour) ramp with one colour per class, there is no
 anti-aliasing inside the raster.
 
 GEEBAM official colour ramp (from MapServer/legend endpoint):
@@ -48,7 +48,7 @@ MAX_REQUEST_PX = 4000
 HTTP_TIMEOUT = 180
 IGNORE_ID = 255
 
-# Official symbology — class label → RGB tuple → internal class ID
+# Official symbology, class label → RGB tuple → internal class ID
 LEGEND_TO_INTERNAL: dict[tuple[int, int, int], int] = {
     (112, 168, 0): 0,  # Unburnt
     (230, 152, 0): 1,  # Low and Moderate
@@ -148,7 +148,7 @@ def fetch_geebam(event_id: str, out_dir: Path | None = None, dry_run: bool = Fal
     log.info("Will request %d sub-tile(s) at %d m native resolution.", len(tiles), GEEBAM_NATIVE_M)
 
     if dry_run:
-        log.warning("dry_run=True — skipping HTTP download.")
+        log.warning("dry_run=True, skipping HTTP download.")
         write_manifest(
             out_path,
             event_id=event_id,
@@ -168,7 +168,7 @@ def fetch_geebam(event_id: str, out_dir: Path | None = None, dry_run: bool = Fal
             },
             crs=f"EPSG:{GEEBAM_REQUEST_CRS_EPSG}",
             resampling="nearest",
-            notes="DRY RUN — manifest only; no raster downloaded.",
+            notes="DRY RUN, manifest only; no raster downloaded.",
         )
         return out_path
 

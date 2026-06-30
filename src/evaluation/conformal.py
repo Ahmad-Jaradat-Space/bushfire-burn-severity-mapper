@@ -1,11 +1,11 @@
 """Split-conformal prediction sets (APS) for severity classification.
 
-A softmax number is not a probability you can bet on — it is uncalibrated and
+A softmax number is not a probability you can bet on, it is uncalibrated and
 gives no coverage guarantee. Conformal prediction fixes that distribution-free:
 given a held-out calibration set, it returns per-pixel *sets* of severity classes
 that contain the truth with a user-chosen probability (e.g. 90%), no matter how
 miscalibrated the underlying model is. Where the model is confident the set is a
-singleton; where it is unsure the set grows — an honest, operator-readable
+singleton; where it is unsure the set grows, an honest, operator-readable
 uncertainty.
 
 We use Adaptive Prediction Sets (APS, Romano, Sesia & Candès 2020): the

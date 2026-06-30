@@ -1,7 +1,7 @@
 # Reproducible CPU/Linux image for training + batch inference.
 #
-# Apple-Silicon MPS is a *development* accelerator only — torch MPS wheels are
-# macOS-only — so the portable, cloud-deployable path is this CPU image. On GCP
+# Apple-Silicon MPS is a *development* accelerator only, torch MPS wheels are
+# macOS-only, so the portable, cloud-deployable path is this CPU image. On GCP
 # swap the base for an NVIDIA CUDA image and the cuda torch wheel (see
 # docs/cloud_gcp.md); nothing else changes.
 FROM python:3.12-slim

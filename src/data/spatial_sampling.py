@@ -1,13 +1,13 @@
-"""Spatial sampling designs — the survey-statistics backbone.
+"""Spatial sampling designs, the survey-statistics backbone.
 
 Two designs the JD explicitly asks for:
 
-* :func:`spatial_block_folds` — k-fold cross-validation where folds are split by
+* :func:`spatial_block_folds`, k-fold cross-validation where folds are split by
   *spatial super-blocks*, never by tile. Random k-fold over autocorrelated tiles
   leaks neighbours across the train/val boundary and inflates the score; blocking
   by super-block is the defensible design. (This generalises the event-wise
   hold-out to a within-region setting.)
-* :func:`stratified_pixel_sample` — a probability sample of reference pixels
+* :func:`stratified_pixel_sample`, a probability sample of reference pixels
   stratified by the *mapped* class, the input an Olofsson area-adjusted accuracy
   estimate (see :mod:`src.evaluation.area_estimation`) actually needs. Equal or
   proportional allocation, with optional grid thinning to damp autocorrelation.

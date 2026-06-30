@@ -1,10 +1,10 @@
 """Query and download Sentinel-2 L2A scenes for an AOI's pre/post windows.
 
 Two-stage flow:
-  1. `fetch_event(event_id)` — queries Planetary Computer STAC and writes a
+  1. `fetch_event(event_id)`, queries Planetary Computer STAC and writes a
      frozen manifest (`stac_items.json`) under data/raw/sentinel2/<event>/.
      This is cheap, fast, and reviewable.
-  2. `download_assets(event_id, kind)` — for each item in the manifest, signs
+  2. `download_assets(event_id, kind)`, for each item in the manifest, signs
      the asset URLs and uses odc.stac.load to materialise a band stack to disk
      as a Cloud-Optimised GeoTIFF.
 
@@ -126,7 +126,7 @@ def download_assets(
     manifest = read_json(items_path)
     items = manifest[f"{kind}_items"]
     if not items:
-        log.warning("No %s items in manifest — nothing to download.", kind)
+        log.warning("No %s items in manifest, nothing to download.", kind)
         return out_dir / kind / "stack.nc"
 
     signed = [planetary_computer.sign(item) for item in items]

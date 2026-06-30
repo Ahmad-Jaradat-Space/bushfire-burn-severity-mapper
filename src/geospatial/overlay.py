@@ -6,7 +6,7 @@ bioregion / tenure parcel*". That is a vector overlay (``ST_Intersection`` in
 PostGIS, ``geopandas.overlay`` here) followed by a zonal area roll-up.
 
 ``management_grid`` builds a tessellation of square units over an AOI when no
-external parcel/bioregion layer is supplied — enough to demonstrate the join.
+external parcel/bioregion layer is supplied, enough to demonstrate the join.
 Swap it for a clipped IBRA bioregion or tenure layer in production.
 """
 

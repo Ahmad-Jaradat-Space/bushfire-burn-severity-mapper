@@ -1,7 +1,7 @@
 """Reliability diagram + Brier score for the burnt-class probability.
 
 Inputs:
-  pred_proba  float32 [H, W]   prob(burnt) — comes from RF.predict_proba or
+  pred_proba  float32 [H, W]   prob(burnt), comes from RF.predict_proba or
                                 the softmax of U-Net/SegFormer logits
   true        uint8   [H, W]   internal class IDs (0=unburnt; 1+=burnt; 255 ignore)
 """

@@ -1,7 +1,7 @@
 """Experiment tracking that degrades to a no-op when MLflow is absent.
 
 Every function here is safe to call whether or not ``mlflow`` is installed or a
-tracking server is configured — so the training scripts can log params, metrics
+tracking server is configured, so the training scripts can log params, metrics
 and artifacts without taking a hard dependency, and CI (which has neither)
 keeps running unchanged. Point it at a server with ``MLFLOW_TRACKING_URI``;
 otherwise it logs to a local ``outputs/mlruns`` file store.

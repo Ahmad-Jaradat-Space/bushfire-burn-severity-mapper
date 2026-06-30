@@ -129,7 +129,7 @@ SLIDER_HTML_TEMPLATE = """<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Kangaroo Island 2019–2020 — Pre vs Post burn severity</title>
+  <title>Kangaroo Island 2019–2020, Pre vs Post burn severity</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="https://cdn.knightlab.com/libs/juxtapose/latest/css/juxtapose.css" />
   <style>
@@ -143,14 +143,14 @@ SLIDER_HTML_TEMPLATE = """<!doctype html>
   </style>
 </head>
 <body>
-  <h1>Kangaroo Island — before vs after the 2019–2020 bushfires</h1>
+  <h1>Kangaroo Island, before vs after the 2019–2020 bushfires</h1>
   <p>Slide the bar left/right to compare the pre-fire and post-fire satellite views. Both images are from
   Sentinel-2 (European Space Agency), accessed via the Microsoft Planetary Computer STAC API.</p>
 
   <div class="caveat">
     <strong>Research use only.</strong> The supervised models in this project learn from
     <a href="https://gis.environment.gov.au/gispubmap/rest/services/threats/AUS_GEEBAM_Fire_Severity/MapServer">AUS&nbsp;GEEBAM</a>
-    — a public satellite-derived <em>proxy</em> for burn severity. It is not field-validated ground truth, and
+, a public satellite-derived <em>proxy</em> for burn severity. It is not field-validated ground truth, and
     these maps are not suitable for emergency response or safety-of-life decisions.
   </div>
 
@@ -183,8 +183,8 @@ We're mapping how badly each patch of bushland was burned during the 2019–2020
 | Colour | What it means |
 |---|---|
 | <span style="color:{SEVERITY_COLORS[0]}">■</span> {SEVERITY_NAMES[0]} | The vegetation was not visibly burned in the satellite image. |
-| <span style="color:{SEVERITY_COLORS[1]}">■</span> {SEVERITY_NAMES[1]} | Some scorching — leaves/grass affected, but the trees likely survived. |
-| <span style="color:{SEVERITY_COLORS[2]}">■</span> {SEVERITY_NAMES[2]} | Significant burning — canopy loss in many trees. |
+| <span style="color:{SEVERITY_COLORS[1]}">■</span> {SEVERITY_NAMES[1]} | Some scorching, leaves/grass affected, but the trees likely survived. |
+| <span style="color:{SEVERITY_COLORS[2]}">■</span> {SEVERITY_NAMES[2]} | Significant burning, canopy loss in many trees. |
 | <span style="color:{SEVERITY_COLORS[3]}">■</span> {SEVERITY_NAMES[3]} | The fire was hot enough that almost no green vegetation survived. |
 
 ## How a satellite "sees" fire
@@ -196,7 +196,7 @@ Comparing the two views before and after the fire makes burn scars stand out cle
 ## Where this map can be wrong
 
 - **Low and moderate are merged.** The label source (AUS GEEBAM) does not separate them.
-- **Steep south-facing slopes can look "burned"** even when they aren't — shadows look dark in satellite images.
+- **Steep south-facing slopes can look "burned"** even when they aren't, shadows look dark in satellite images.
 - **Clouds and smoke** hide the surface. Where we couldn't see clearly in either image, we mark the pixel as "no data" (transparent).
 - **This is not a real-time map.** All comparisons use images taken weeks or months apart, never live.
 
@@ -215,7 +215,7 @@ def make_demo(force_synthetic: bool = False) -> dict[str, Path]:
     real = None if force_synthetic else _kangaroo_real()
     if real is None:
         log.warning(
-            "No real Kangaroo data found yet — rendering SYNTHETIC demo "
+            "No real Kangaroo data found yet, rendering SYNTHETIC demo "
             "so the slider/animation infrastructure is reviewable."
         )
         pre_rgb, post_rgb, severity = _synthetic_kangaroo()

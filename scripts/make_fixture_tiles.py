@@ -5,7 +5,7 @@ Writes:
   data/sample/tiles/synthetic_event/val/tile_00000..tile_00001.npz
   data/processed/tile_index_synthetic_event.parquet
 
-No live network or imagery needed — purely synthetic so CI is hermetic.
+No live network or imagery needed, purely synthetic so CI is hermetic.
 """
 
 from __future__ import annotations

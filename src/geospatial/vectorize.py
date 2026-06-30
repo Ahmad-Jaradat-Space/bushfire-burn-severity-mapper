@@ -31,7 +31,7 @@ def raster_to_polygons(
     Connected regions of equal class become polygons; tiny specks below
     ``min_pixels`` are dropped; with ``dissolve`` the result is one multipolygon
     per class. ``valid_mask_path`` (e.g. the GEEBAM label) restricts output to
-    its non-ignore footprint — the honest way to drop ocean / unassessed pixels
+    its non-ignore footprint, the honest way to drop ocean / unassessed pixels
     the model still labels.
     """
     with rasterio.open(pred_path) as ds:

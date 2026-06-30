@@ -1,4 +1,4 @@
-"""Phase D CLI — vectorise severity, roll up by management unit, render 12/13.
+"""Phase D CLI, vectorise severity, roll up by management unit, render 12/13.
 
 python scripts/compute_vector.py                 # figures + area table
 POSTGIS_DSN=... python scripts/compute_vector.py --postgis   # also load + query PostGIS

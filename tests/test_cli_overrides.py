@@ -27,7 +27,7 @@ def test_train_segmenter_accepts_overrides(monkeypatch):
             "train.batch_size=2",
         ],
     )
-    # We don't actually invoke training — just verify the argparse accepts the
+    # We don't actually invoke training, just verify the argparse accepts the
     # positional overrides without error. We monkey-patch the train function to
     # short-circuit the actual training step.
     from src.models import train_segmenter as ts

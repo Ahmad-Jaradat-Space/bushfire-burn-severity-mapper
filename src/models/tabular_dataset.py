@@ -30,7 +30,7 @@ def sample_event_pixels(
 ) -> tuple[np.ndarray, np.ndarray, list[str]]:
     """Return (X, y, feature_names) sampled from this event's tiles.
 
-    Per-class stratification is performed within each (event, split) — we draw
+    Per-class stratification is performed within each (event, split), we draw
     up to `pixels_per_class` pixels uniformly across all tiles in that split.
     """
     rng = np.random.default_rng(seed)

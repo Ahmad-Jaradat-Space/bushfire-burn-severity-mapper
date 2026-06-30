@@ -1,4 +1,4 @@
-"""Phase B CLI — MC-dropout uncertainty + conformal sets on the event-wise U-Net.
+"""Phase B CLI, MC-dropout uncertainty + conformal sets on the event-wise U-Net.
 
 Thin driver over :mod:`src.evaluation.uq_report`. Writes the scalar report and
 figures 10/11.

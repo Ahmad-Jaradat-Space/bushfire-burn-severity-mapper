@@ -6,7 +6,7 @@ the 18th channel of the feature stack (slope) is a zero plane and
 :mod:`src.evaluation.stratified_reports` cannot stratify by slope. This module
 materialises ``data/interim/<event>/slope_10m.tif`` on the same grid as the
 reflectance composites (despite the ``_10m`` legacy suffix, the working grid is
-30 m — a native match for GLO-30).
+30 m, a native match for GLO-30).
 """
 
 from __future__ import annotations
@@ -106,7 +106,7 @@ def fetch_copernicus_dem(event_id: str, out_dir: Path | None = None) -> Path:
             "n_items": len(items),
             "service": STAC_URL,
             "resolution_m": res_m,
-            "licence": "Copernicus DEM — free and open (ESA/EC)",
+            "licence": "Copernicus DEM, free and open (ESA/EC)",
             "slope_units": "degrees",
         },
         crs=str(crs),

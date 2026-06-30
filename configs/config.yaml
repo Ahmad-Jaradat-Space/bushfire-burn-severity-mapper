@@ -5,7 +5,7 @@ project:
   output_dir: outputs
 
 device:
-  prefer: mps          # mps | cuda | cpu — picker falls back automatically
+  prefer: mps          # mps | cuda | cpu, picker falls back automatically
 
 data:
   imagery_provider: planetary_computer
@@ -25,7 +25,7 @@ crs:
   national_display: EPSG:3577
   geebam_request: EPSG:3577
 
-# Temporal-window policy — every experiment must declare which mode it runs in.
+# Temporal-window policy, every experiment must declare which mode it runs in.
 #   - event_specific: per-AOI Pre/Post derived from the named fire
 #   - geebam_aligned: matches the GEEBAM compositing windows for direct label comparison
 temporal_windows:
@@ -71,7 +71,7 @@ features:
 class_map:
   ignore_id: 255
   geebam_to_internal:
-    "1": 255    # unburnt-outside / no-data — IGNORE
+    "1": 255    # unburnt-outside / no-data, IGNORE
     "2": 0      # unburnt
     "3": 1      # low-moderate
     "4": 2      # high

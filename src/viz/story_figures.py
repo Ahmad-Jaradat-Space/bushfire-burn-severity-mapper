@@ -3,7 +3,7 @@ closes on.
 
 Everything here renders **offline** from artifacts already on disk
 (``outputs/metrics/uncertainty/<event>_eventwise.json`` and
-``outputs/metrics/per_aoi_summary.json``) — no network, no model load — so the
+``outputs/metrics/per_aoi_summary.json``), no network, no model load, so the
 notebook's hero figures regenerate in seconds and never depend on a live STAC
 call. The statistics were computed upstream by
 :mod:`src.evaluation.uncertainty_report`; this module only composes them into
@@ -11,12 +11,12 @@ the figures a reader meets first.
 
 Four figures:
 
-``fig_leaderboard``       the graphical abstract — every method ranked by
+``fig_leaderboard``       the graphical abstract, every method ranked by
                           event-wise macro-IoU with bootstrap intervals and a
                           one-line verdict against the twenty-year-old baseline.
 ``fig_methods_overview``  the six methods at a glance: family, inputs, trainable
                           parameters, and the headline score, as a clean card.
-``fig_split_schematic``   why an event-wise hold-out is the only honest split —
+``fig_split_schematic``   why an event-wise hold-out is the only honest split,
                           drawn, not described.
 ``fig_journey``           a navigational ribbon of the argument, for the reader
                           who wants to know where the piece is going.
@@ -46,9 +46,9 @@ from src.viz.theme import (
 EVENT = "kangaroo_island_2019_2020"
 
 # verdict palette
-_GOOD = "#4F7A5B"  # confident green — beats the baseline
+_GOOD = "#4F7A5B"  # confident green, beats the baseline
 _MEH = INK_LIGHT  # ties the baseline
-_BAD = "#9A5A4A"  # muted red — below the baseline
+_BAD = "#9A5A4A"  # muted red, below the baseline
 
 # family label + the colour used for that method's marker
 FAMILY = {
@@ -70,7 +70,7 @@ INPUTS = {
     "prithvi": "6 bands, post-fire only · frozen 300M ViT",
 }
 TRAINABLE = {
-    "baseline_dnbr": "0 — fixed thresholds",
+    "baseline_dnbr": "0, fixed thresholds",
     "rf": "500 trees",
     "xgb": "800 trees",
     "unet": "24.4 M",
@@ -97,7 +97,7 @@ def _load_per_aoi() -> dict:
 def _verdict(model: str, report: dict) -> tuple[str, str]:
     """Return (text, colour) describing this model vs the ΔNBR floor."""
     if model == "baseline_dnbr":
-        return "the floor — a 1996 two-band index, 0 trainable params", _MEH
+        return "the floor, a 1996 two-band index, 0 trainable params", _MEH
     d = report["paired_delta_vs_dnbr"].get(model)
     if d is None:
         return "", _MEH
@@ -111,7 +111,7 @@ def _verdict(model: str, report: dict) -> tuple[str, str]:
 
 
 # --------------------------------------------------------------------------- #
-# 1. leaderboard — the graphical abstract
+# 1. leaderboard, the graphical abstract
 # --------------------------------------------------------------------------- #
 def fig_leaderboard(out: Path, event: str = EVENT) -> Path:
     """Ranked event-wise macro-IoU with bootstrap CIs and a per-row verdict.
@@ -235,8 +235,8 @@ def fig_leaderboard(out: Path, event: str = EVENT) -> Path:
     ax.spines["bottom"].set_color(INK_LIGHT)
     ax.grid(False)
     ax.set_xlabel(
-        "Event-wise macro-IoU on Kangaroo Island — a fire no model trained on  "
-        "(● point · — 95% spatial-block bootstrap interval)",
+        "Event-wise macro-IoU on Kangaroo Island, a fire no model trained on  "
+        "(● point ·, 95% spatial-block bootstrap interval)",
         fontsize=9.5,
         color=INK_LIGHT,
     )
@@ -265,7 +265,7 @@ def fig_leaderboard(out: Path, event: str = EVENT) -> Path:
         0.012,
         0.855,
         "Four trained models plus the ΔNBR spectral index, scored on a held-out fire. Error bars that respect\n"
-        "spatial autocorrelation collapse most of the apparent winners back onto the baseline — except Prithvi.",
+        "spatial autocorrelation collapse most of the apparent winners back onto the baseline, except Prithvi.",
         ha="left",
         va="top",
         fontsize=10.5,
@@ -278,7 +278,7 @@ def fig_leaderboard(out: Path, event: str = EVENT) -> Path:
 
 
 # --------------------------------------------------------------------------- #
-# 2. methods at a glance — a drawn card/table
+# 2. methods at a glance, a drawn card/table
 # --------------------------------------------------------------------------- #
 def fig_methods_overview(out: Path, event: str = EVENT) -> Path:
     apply_theme()
@@ -396,7 +396,7 @@ def fig_methods_overview(out: Path, event: str = EVENT) -> Path:
                 fontweight="bold",
             )
         else:
-            tag = f"in-domain {val:.3f} only" if val is not None else "—"
+            tag = f"in-domain {val:.3f} only" if val is not None else ", "
             ax.text(
                 bar_x0, y, tag, ha="left", va="center", fontsize=9, color=INK_LIGHT, style="italic"
             )
@@ -407,7 +407,7 @@ def fig_methods_overview(out: Path, event: str = EVENT) -> Path:
     fig.text(
         0.012,
         0.895,
-        "From a two-band ratio to a 300-million-parameter foundation model — same imagery, same labels, same split.",
+        "From a two-band ratio to a 300-million-parameter foundation model, same imagery, same labels, same split.",
         ha="left",
         va="top",
         fontsize=10.5,
@@ -441,7 +441,7 @@ def _label(m: str) -> str:
 
 
 # --------------------------------------------------------------------------- #
-# 3. split schematic — why event-wise is the only honest protocol
+# 3. split schematic, why event-wise is the only honest protocol
 # --------------------------------------------------------------------------- #
 def fig_split_schematic(out: Path) -> Path:
     apply_theme()
@@ -484,8 +484,8 @@ def fig_split_schematic(out: Path) -> Path:
     )
     _panel_head(
         axL,
-        "Random tile split — the leak",
-        "Train and test tiles are drawn from the SAME fire. Same soil,\nslope, fuel and weather — so the score flatters the model.",
+        "Random tile split, the leak",
+        "Train and test tiles are drawn from the SAME fire. Same soil,\nslope, fuel and weather, so the score flatters the model.",
     )
 
     # ---- right: event-wise hold-out (honest) ----
@@ -536,7 +536,7 @@ def fig_split_schematic(out: Path) -> Path:
     )
     _panel_head(
         axR,
-        "Event-wise hold-out — the honest test",
+        "Event-wise hold-out, the honest test",
         "Train on two NSW fires, test on a South Australian one. Nothing\nthe model saw in training touches the test set.",
     )
 
@@ -555,7 +555,7 @@ def fig_split_schematic(out: Path) -> Path:
 
 
 # --------------------------------------------------------------------------- #
-# 4. journey ribbon — a navigational map of the argument
+# 4. journey ribbon, a navigational map of the argument
 # --------------------------------------------------------------------------- #
 _STOPS = [
     ("01", "The physics", "why fire is visible from orbit"),
