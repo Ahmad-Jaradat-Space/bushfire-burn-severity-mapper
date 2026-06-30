@@ -1,6 +1,6 @@
 # Australian Bushfire Burn Severity Mapper
 
-**A retrospective benchmark of five severity-mapping methods — from a 20-year-old spectral index to a modern transformer — over four 2019–2020 Australian "Black Summer" fire events, on Sentinel-2 imagery, with honest evaluation and proxy-label caveats throughout.**
+**A retrospective benchmark of six severity-mapping methods — from a 20-year-old spectral index to a geospatial foundation model — over four 2019–2020 Australian "Black Summer" fire events, on Sentinel-2 imagery, with honest evaluation, calibrated uncertainty, and proxy-label caveats throughout.**
 
 > ⚠️ **Research and education only.** Not for emergency response, public warning, dispatch, evacuation planning, insurance, or any safety-of-life decision. The supervised models learn from **AUS GEEBAM** — a public satellite-derived proxy for burn severity, not field-validated ground truth. See [`docs/model_card.md`](docs/model_card.md) for the full limitations list.
 
@@ -15,7 +15,9 @@ The single best entry point is the executable scientific notebook:
 
 It reads like a magazine feature: starts with the physical signal in Sentinel-2 imagery, walks through the dNBR baseline, sets up the five-method tournament, and ends on the question that actually matters operationally — *which model travels across fires and which one doesn't*.
 
-![AOI locator](docs/figures/01_aoi_locator.png)
+![Leaderboard: every method scored on a held-out fire with spatial-block bootstrap confidence intervals. Classical models collapse below the baseline; the U-Net ties it; only the frozen Prithvi-EO-2.0 foundation model beats a 1996 spectral index significantly.](docs/figures/00_leaderboard.png)
+
+<sub>**The bottom line, up front.** Every method scored on a fire none of them trained on, with 95% spatial-block bootstrap intervals. Most apparent winners *tie* a spectral index from 1996; only the frozen Prithvi-EO-2.0 foundation model clears it by a statistically significant margin (Δ macro-IoU +0.06, *p* < 0.001) — with a tenth of the trainable parameters.</sub>
 
 ---
 
@@ -24,7 +26,7 @@ It reads like a magazine feature: starts with the physical signal in Sentinel-2 
 1. **Ingests** Sentinel-2 Level-2A surface reflectance via the Microsoft Planetary Computer STAC API for four 2019–2020 fire events.
 2. **Aligns** AUS GEEBAM fire-severity labels (ArcGIS REST `exportImage`, EPSG:3577, 40 m) onto the per-AOI UTM Sentinel-2 grid at 10 m using nearest-neighbour resampling.
 3. **Builds** an 18-channel feature stack (6 pre + 6 post reflectance + 5 differenced indices + slope) and tiles to 256 × 256.
-4. **Compares** five severity-mapping methods under the same **event-wise hold-out split**:
+4. **Compares** six severity-mapping methods under the same **event-wise hold-out split**:
 
    | Method | Output | Implementation |
    |---|---|---|
@@ -33,9 +35,39 @@ It reads like a magazine feature: starts with the physical signal in Sentinel-2 
    | XGBoost | 4-class | `xgboost.XGBClassifier`, `multi:softprob`, 800 trees, `tree_method="hist"` |
    | U-Net | 4-class | `segmentation_models_pytorch`, ResNet-34 encoder, 18 → 4 |
    | SegFormer-B0 | 4-class | HuggingFace `transformers`, `nvidia/mit-b0`, **first conv inflated 3 → 18** |
+   | **Prithvi-EO-2.0-300M** | 4-class | NASA/IBM geospatial **foundation model** — frozen 304M ViT + trained decoder (`terratorch`) |
 
 5. **Reports** event-wise macro IoU/F1, per-class precision/recall, per-land-cover and per-slope stratified breakdowns, confusion matrices, reliability diagrams (ECE + Brier), and the full Codex review trail per milestone.
 6. **Publishes** a reproducible report card: every figure regenerates from saved prediction GeoTIFFs via `python scripts/render_hero_figures.py` and `python -m src.viz.readme_panels --mode overview`.
+
+## What this demonstrates for an ecological-monitoring platform
+
+The case study is burn severity; the capabilities are the ones a landscape-scale
+ecological-monitoring platform runs on. Full mapping in [`docs/capability_matrix.md`](docs/capability_matrix.md).
+
+| Capability | In the repo | Transfers to |
+|---|---|---|
+| DL segmentation + a **foundation model** (Prithvi-EO-2.0) | `src/models/` | vegetation / lifeform / rehab-stage mapping, scarce-label generalisation |
+| Geospatial vector engineering — polygonise, overlay, **PostGIS**, **QGIS**, mosaicking | `src/geospatial/`, `sql/`, `qgis/` | management-unit / bioregion / tenure reporting |
+| Spatial & survey **sampling** + design-based (Olofsson) accuracy | `src/data/spatial_sampling.py`, `src/evaluation/area_estimation.py` | representative, defensible train/val/assessment design |
+| **Uncertainty** (MC-dropout, conformal sets, calibration) | `src/evaluation/{uq_maps,conformal}.py` | trustworthy figures; flagging "I don't know" |
+| Applied **statistics / econometrics** (bootstrap CIs, McNemar, confounder GLM) | `src/evaluation/uncertainty.py`, `src/stats/` | honest effect sizes, controlling for confounders |
+| **MLOps / scale** — Docker, MLflow, batch-inference benchmark, **GCP** design | `docker/`, `src/inference/`, `docs/cloud_gcp.md` | enterprise jobs at landscape scale |
+
+## Senior-level analysis (the four disciplines)
+
+Beyond the model tournament, the notebook carries the rigor that separates a
+prototype from a product — each as a reproducible figure:
+
+- **Statistics** — spatial-block bootstrap CIs + McNemar significance (the U-Net's edge over ΔNBR is *not* significant; Prithvi's *is*), and Olofsson area-adjusted hectares. *(figs 06–08)*
+- **Rare classes** — per-class precision/recall: the tree models score recall 0.00 on "Very High". *(fig 08b)*
+- **Econometrics** — a cluster-robust logistic GLM of error: controlling for class and burn signal, **slope is not significant**. *(fig 09)*
+- **Uncertainty** — MC-dropout epistemic maps + conformal prediction sets with a coverage/efficiency curve. *(figs 10–11)*
+- **Geospatial delivery** — severity → polygons → management-unit roll-up, PostGIS-ready. *(figs 12–13)*
+- **Scale** — throughput / memory / projected cloud cost to map a state at aerial resolution. *(figs 14–15)*
+- **Foundation model** — frozen Prithvi-EO-2.0 beats the from-scratch U-Net with 1/10th the trainable parameters. *(fig 16)*
+
+Regenerate the analysis figures: `python scripts/compute_uncertainty.py`, `python -m src.stats.confounders`, `python scripts/compute_uq.py`, `python scripts/compute_vector.py`, `python scripts/benchmark_inference.py`.
 
 ## The figures, in order
 
