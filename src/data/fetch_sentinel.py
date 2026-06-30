@@ -8,7 +8,7 @@ Two-stage flow:
      the asset URLs and uses odc.stac.load to materialise a band stack to disk
      as a Cloud-Optimised GeoTIFF.
 
-Splitting the two lets a reviewer (or Codex) inspect *what* will be downloaded
+Splitting the two lets a reviewer inspect *what* will be downloaded
 before bandwidth is spent.
 """
 

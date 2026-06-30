@@ -50,7 +50,7 @@ Every raster under `data/interim/`, `data/processed/`, and `outputs/predictions/
 }
 ```
 
-This is what lets a reviewer (Codex or a hiring manager) re-derive any figure from its source assets.
+This is what lets a reviewer (or a hiring manager) re-derive any figure from its source assets.
 
 ## 4. Class map
 

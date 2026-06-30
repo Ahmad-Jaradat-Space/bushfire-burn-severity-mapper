@@ -111,6 +111,6 @@ know:
 - `pyproject.toml` pins dependency lower bounds. A frozen `requirements.txt` snapshot is produced at the M12 commit; recompute with `pip freeze`.
 - CI runs lint, unit tests, and a `--fast-mode` smoke training on frozen fixture tiles. No live STAC calls in CI.
 
-## Codex review trail
+## Review trail
 
-Every milestone gate's Codex CLI review is committed under `docs/reviews/M<N>_codex_review.md` so that the *process* (not only the artefacts) is part of the portfolio.
+Each milestone gate was reviewed before merge, so that the *process* (not only the artefacts) is part of the portfolio.

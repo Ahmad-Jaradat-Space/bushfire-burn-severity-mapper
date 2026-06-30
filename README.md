@@ -267,6 +267,6 @@ Contains modified Copernicus Sentinel data [2019–2020] processed by ESA (CC-BY
 
 ## 🙋 About
 
-Built by **[Ahmad Jaradat](https://github.com/Ahmad-Jaradat-Space)** (Hobart, Tasmania). Published as a working scientific notebook, the full scientific design lives in [`deep-research-report.md`](deep-research-report.md), and the implementation followed a milestone-by-milestone plan with each gate reviewed via the Codex CLI ([transcripts](docs/reviews/)).
+Built by **[Ahmad Jaradat](https://github.com/Ahmad-Jaradat-Space)** (Hobart, Tasmania). Published as a working scientific notebook, the full scientific design lives in [`deep-research-report.md`](deep-research-report.md), and the implementation followed a milestone-by-milestone plan with each gate reviewed before merge.
 
 <div align="center"><sub>If this was useful or interesting, a ⭐ is always appreciated.</sub></div>
