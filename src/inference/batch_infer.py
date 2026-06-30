@@ -19,7 +19,6 @@ import psutil
 import rasterio
 
 from src.features.stack_features import build_stack
-from src.models.train_segmenter import _sliding_window_predict, _write_uint8
 from src.utils.geo import REPO_ROOT
 from src.utils.logging_utils import get_logger
 
@@ -69,6 +68,8 @@ def _load_model(device):
 
 def tiled_event_inference(event: str, device: torch.device, write: bool = False) -> dict:
     """Predict one event end-to-end; return timing + memory stats."""
+    from src.models.train_segmenter import _sliding_window_predict, _write_uint8
+
     stats = json.loads((MODEL_DIR / "normalization.json").read_text())
     mean = np.array(stats["mean"], np.float32)
     std = np.array(stats["std"], np.float32)
